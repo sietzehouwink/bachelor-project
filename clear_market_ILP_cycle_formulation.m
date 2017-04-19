@@ -1,29 +1,17 @@
 function [optimal_cycle_indices, max_exchange_weight] = clear_market_ILP_cycle_formulation(nr_vertices, edges)
-    cycles = graph_to_cycles(nr_vertices, edges);
-    A = cycles_to_vertex_in_cycle_count(nr_vertices, cycles);
+    cycles = get_cycles(nr_vertices, edges);
     
-    nr_cycles = size(cycles, 1);
-    b = ones(nr_vertices, 1);
+    f = get_cycle_weights(cycles);
+    A = get_vertex_in_cycle_count_calculating_matrix(nr_vertices, cycles);
+    b = get_max_vertex_in_cycle_count(nr_vertices);
     
-    cycle_lengths = zeros(nr_cycles, 1);
-    for cycle_index = 1:nr_cycles
-        cycle = cycles{cycle_index};
-        cycle_lengths(cycle_index) = size(cycle, 2);
-    end
+    [optimal_cycle_indices, max_exchange_weight] = maximize_ILP(f, A, b);
     
-    f = cycle_lengths .* ones(nr_cycles, 1);
-    intcon = ones(nr_cycles, 1);
-    
-    lb = zeros(nr_cycles, 1);
-    ub = ones(nr_cycles, 1);
-    
-    options = optimoptions('intlinprog', 'Display', 'none');
-    [optimal_cycle_indices,fval,~,~] = intlinprog(-f,intcon,A,b,[],[],lb,ub,options);
-    max_exchange_weight = -fval;
+    %optimal_edge_indices = get_optimal_edge_indices(optimal_cycle_indices, cycles);
     
 end
 
-function [cycles] = graph_to_cycles(nr_vertices, edges)
+function [cycles] = get_cycles(nr_vertices, edges)
     cycles = cell(4,1);
     cycles{1} = [1,2];
     cycles{2} = [2,3];
@@ -31,15 +19,51 @@ function [cycles] = graph_to_cycles(nr_vertices, edges)
     cycles{4} = [1,2,3,4,5];
 end
 
-function [A] = cycles_to_vertex_in_cycle_count(nr_vertices, cycles)
+function [vertex_in_cycle_count_calculating_matrix] = get_vertex_in_cycle_count_calculating_matrix(nr_vertices, cycles)
     nr_cycles = size(cycles, 1);
-    A = zeros(nr_vertices, nr_cycles);
+    vertex_in_cycle_count_calculating_matrix = zeros(nr_vertices, nr_cycles);
     for cycle_index = 1:nr_cycles
         cycle = cycles{cycle_index};
         nr_vertices_in_cycle = size(cycle, 2);
         for vertex_index = 1:nr_vertices_in_cycle
             vertex = cycle(vertex_index);
-            A(vertex, cycle_index) = 1;
+            vertex_in_cycle_count_calculating_matrix(vertex, cycle_index) = 1;
         end
     end
 end
+
+function [max_vertex_in_cycle_count] = get_max_vertex_in_cycle_count(nr_vertices)
+    max_vertex_in_cycle_count = ones(nr_vertices, 1);
+end
+
+function [cycle_weights] = get_cycle_weights(cycles)
+    nr_cycles = size(cycles,1);
+    cycle_lengths = get_cycle_lengths(cycles);
+    cycle_weights = cycle_lengths .* ones(nr_cycles, 1);
+end
+
+function [cycle_lengths] = get_cycle_lengths(cycles)
+    nr_cycles = size(cycles,1);
+    cycle_lengths = zeros(nr_cycles,1);
+    for cycle_index = 1:nr_cycles
+        cycle = cycles{cycle_index};
+        cycle_lengths(cycle_index) = size(cycle,2);
+    end
+end
+
+function [variable_values, maximum] = maximize_ILP(f, A, b)
+    nr_vars = size(A,2);
+    
+    intcon = ones(nr_vars,1);
+    lb = zeros(nr_vars,1);
+    ub = ones(nr_vars,1);
+    options = optimoptions('intlinprog', 'Display', 'none');
+    
+    [variable_values, minimum, ~, ~] = intlinprog(-f, intcon, A, b, [], [], lb, ub, options);
+    
+    maximum = -minimum;
+end
+
+% function [optimal_edge_indices] = get_optimal_edge_indices(optimal_cycle_indices, cycles)
+%     optimal_edge_indices = cycles;
+% end
