@@ -1,15 +1,15 @@
-function [optimal_edge_indices, max_exchange_weight] = clear_market_ILP_cycle_formulation(nr_vertices, edges)
+function [optimal_edge_indices, max_exchange_value] = clear_market_ILP_cycle_formulation(nr_vertices, edges)
     cycles = get_cycles(nr_vertices, edges);
     
     f = get_cycle_weights(cycles);
     A = get_vertex_containment_count_calculating_matrix(nr_vertices, cycles, edges);
     b = get_max_vertex_containment_count(nr_vertices);
     
-    [cycle_values, max_exchange_weight] = maximize_ILP(f, A, b);
+    [activated_cycle_indices, max_exchange_value] = activate_maximizing_value(f, A, b, [], []);
     
     nr_edges = size(edges,1);
     
-    optimal_edge_indices = to_edge_indices(cycle_values, cycles, nr_edges);
+    optimal_edge_indices = to_edge_indices(activated_cycle_indices, cycles, nr_edges);
 end
 
 function [vertex_containment_count_calculating_matrix] = get_vertex_containment_count_calculating_matrix(nr_vertices, cycles, edges)
@@ -51,21 +51,8 @@ function [cycle_lengths] = get_cycle_lengths(cycles)
     end
 end
 
-function [variable_values, maximum] = maximize_ILP(f, A, b)
-    nr_vars = size(A,2);
-    
-    intcon = ones(nr_vars,1);
-    lb = zeros(nr_vars,1);
-    ub = ones(nr_vars,1);
-    options = optimoptions('intlinprog', 'Display', 'none');
-    
-    [variable_values, minimum, ~, ~] = intlinprog(-f, intcon, A, b, [], [], lb, ub, options);
-    
-    maximum = -minimum;
-end
-
 function [activated_edge_indices] = to_edge_indices(bitset_activated_cycles, cycles, nr_edges)   
-    activated_cycles = cycles(logical(bitset_activated_cycles));
+    activated_cycles = cycles(bitset_activated_cycles);
     nr_activated_cycles = size(activated_cycles,1);
     
     bitset_activated_edges = zeros(nr_edges,1);
