@@ -1,14 +1,7 @@
-nr_vertices = 5;
-edges = [1,2;
-         2,1;
-         2,3;
-         3,2;
-         3,4;
-         4,3;
-         4,5;
-         5,1];
+adj_list = {[2];[1;3];[2;4];[3;5];[1]};
+graph = struct('nr_vertices', {5}, 'nr_edges', {8}, 'adj_list', {adj_list});
      
-[optimal_edge_indices, max_exchange_weight] = clear_market_ILP_edge_formulation(nr_vertices, edges);
+[optimal_edge_indices, max_exchange_weight] = clear_market_ILP_edge_formulation(graph);
 
 disp('### Cleared market. ###');
 fprintf('Maximum exchange weight: %d\n', max_exchange_weight);
