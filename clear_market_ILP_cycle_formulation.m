@@ -12,14 +12,6 @@ function [optimal_edge_indices, max_exchange_weight] = clear_market_ILP_cycle_fo
     optimal_edge_indices = to_edge_indices(cycle_values, cycles, nr_edges);
 end
 
-function [cycles] = get_cycles(nr_vertices, edges)
-    cycles = cell(4,1);
-    cycles{1} = [1;2];
-    cycles{2} = [3;4];
-    cycles{3} = [5;6];
-    cycles{4} = [1;3;5;7;8];
-end
-
 function [vertex_containment_count_calculating_matrix] = get_vertex_containment_count_calculating_matrix(nr_vertices, cycles, edges)
     nr_cycles = size(cycles,1);
     
