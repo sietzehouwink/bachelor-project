@@ -1,19 +1,14 @@
-nr_vertices = 5;
-edges = [1,2;
-         2,1;
-         2,3;
-         3,2;
-         3,4;
-         4,3;
-         4,5;
-         5,1];
+adj_list = {[2];[1;3];[2;4];[3;5];[1]};
+graph = struct('nr_vertices', {5}, 'nr_edges', {8}, 'adj_list', {adj_list});
      
-[optimal_edge_indices, max_exchange_weight] = clear_market_ILP_cycle_formulation(nr_vertices, edges);
+[activated_graph, max_exchange_value] = clear_market_ILP_cycle_formulation(graph);
 
 disp('### Cleared market. ###');
-fprintf('Maximum exchange weight: %d\n', max_exchange_weight);
+fprintf('Maximum exchange value: %d\n', max_exchange_value);
 fprintf('Activated edges: ');
-for edge_index = 1:size(optimal_edge_indices, 1)
-    fprintf('%d ', optimal_edge_indices(edge_index));
+for tail_vertex = 1:activated_graph.nr_vertices
+    for head_vertex = activated_graph.adj_list{tail_vertex}'
+        fprintf('[%d %d] ', tail_vertex, head_vertex);
+    end
 end
 fprintf('\n');

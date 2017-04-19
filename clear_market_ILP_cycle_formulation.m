@@ -1,30 +1,41 @@
-function [optimal_edge_indices, max_exchange_value] = clear_market_ILP_cycle_formulation(nr_vertices, edges)
-    cycles = get_cycles(nr_vertices, edges);
+function [subgraph, max_exchange_value] = clear_market_ILP_cycle_formulation(graph)
+    cycles = get_cycles(graph);
     
     f = get_cycle_weights(cycles);
-    A = get_vertex_containment_count_calculating_matrix(nr_vertices, cycles, edges);
-    b = get_max_vertex_containment_count(nr_vertices);
+    A = get_vertex_containment_count_calculating_matrix(graph, cycles);
+    b = get_max_vertex_containment_count(graph.nr_vertices);
     
     [activated_cycle_indices, max_exchange_value] = activate_maximizing_value(f, A, b, [], []);
     
-    nr_edges = size(edges,1);
+    adj_list = cell(graph.nr_vertices,1);
+    nr_edges = 0;
+    for cycle_index = activated_cycle_indices
+        cycle = cycles{cycle_index};
+        nr_edges = nr_edges + size(cycle,1);
+        for tail_vertex_index = 1:size(cycle,1)-1
+            tail_vertex = cycle(tail_vertex_index);
+            head_vertex = cycle(tail_vertex_index+1);
+            adj_list{tail_vertex}(end+1,1) = head_vertex;
+        end
+        tail_vertex = cycle(end,1);
+        head_vertex = cycle(1,1);
+        adj_list{tail_vertex}(end+1,1) = head_vertex;
+    end
     
-    optimal_edge_indices = to_edge_indices(activated_cycle_indices, cycles, nr_edges);
+    subgraph = struct('nr_vertices', {graph.nr_vertices}, 'nr_edges', {nr_edges}, 'adj_list', {adj_list});
+    
 end
 
-function [vertex_containment_count_calculating_matrix] = get_vertex_containment_count_calculating_matrix(nr_vertices, cycles, edges)
+function [vertex_containment_count_calculating_matrix] = get_vertex_containment_count_calculating_matrix(graph, cycles)
     nr_cycles = size(cycles,1);
     
-    vertex_containment_count_calculating_matrix = zeros(nr_vertices, nr_cycles);
+    vertex_containment_count_calculating_matrix = zeros(graph.nr_vertices, nr_cycles);
     for cycle_index = 1:nr_cycles
         cycle = cycles{cycle_index};
         nr_edges = size(cycle, 1);
-        
         for edge_index = 1:nr_edges
-            edge = cycle(edge_index);
-            outgoing_vertex = edges(edge, 1);
-            
-            vertex_containment_count_calculating_matrix(outgoing_vertex, cycle_index) = 1;
+            tail_vertex = cycle(edge_index);
+            vertex_containment_count_calculating_matrix(tail_vertex, cycle_index) = 1;
         end
         
     end
