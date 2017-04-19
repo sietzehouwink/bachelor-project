@@ -1,53 +1,61 @@
-function [optimal_cycle_indices, max_exchange_weight] = clear_market_ILP_cycle_formulation(nr_vertices, edges)
+function [optimal_edge_indices, max_exchange_weight] = clear_market_ILP_cycle_formulation(nr_vertices, edges)
     cycles = get_cycles(nr_vertices, edges);
     
     f = get_cycle_weights(cycles);
-    A = get_vertex_in_cycle_count_calculating_matrix(nr_vertices, cycles);
-    b = get_max_vertex_in_cycle_count(nr_vertices);
+    A = get_vertex_containment_count_calculating_matrix(nr_vertices, cycles, edges);
+    b = get_max_vertex_containment_count(nr_vertices);
     
-    [optimal_cycle_indices, max_exchange_weight] = maximize_ILP(f, A, b);
+    [cycle_values, max_exchange_weight] = maximize_ILP(f, A, b);
     
-    %optimal_edge_indices = get_optimal_edge_indices(optimal_cycle_indices, cycles);
+    nr_edges = size(edges,1);
     
+    optimal_edge_indices = to_edge_indices(cycle_values, cycles, nr_edges);
 end
 
 function [cycles] = get_cycles(nr_vertices, edges)
     cycles = cell(4,1);
-    cycles{1} = [1,2];
-    cycles{2} = [2,3];
-    cycles{3} = [3,4];
-    cycles{4} = [1,2,3,4,5];
+    cycles{1} = [1;2];
+    cycles{2} = [3;4];
+    cycles{3} = [5;6];
+    cycles{4} = [1;3;5;7;8];
 end
 
-function [vertex_in_cycle_count_calculating_matrix] = get_vertex_in_cycle_count_calculating_matrix(nr_vertices, cycles)
-    nr_cycles = size(cycles, 1);
-    vertex_in_cycle_count_calculating_matrix = zeros(nr_vertices, nr_cycles);
+function [vertex_containment_count_calculating_matrix] = get_vertex_containment_count_calculating_matrix(nr_vertices, cycles, edges)
+    nr_cycles = size(cycles,1);
+    
+    vertex_containment_count_calculating_matrix = zeros(nr_vertices, nr_cycles);
     for cycle_index = 1:nr_cycles
         cycle = cycles{cycle_index};
-        nr_vertices_in_cycle = size(cycle, 2);
-        for vertex_index = 1:nr_vertices_in_cycle
-            vertex = cycle(vertex_index);
-            vertex_in_cycle_count_calculating_matrix(vertex, cycle_index) = 1;
+        nr_edges = size(cycle, 1);
+        
+        for edge_index = 1:nr_edges
+            edge = cycle(edge_index);
+            outgoing_vertex = edges(edge, 1);
+            
+            vertex_containment_count_calculating_matrix(outgoing_vertex, cycle_index) = 1;
         end
+        
     end
 end
 
-function [max_vertex_in_cycle_count] = get_max_vertex_in_cycle_count(nr_vertices)
-    max_vertex_in_cycle_count = ones(nr_vertices, 1);
+function [max_vertex_in_cycle_count] = get_max_vertex_containment_count(nr_vertices)
+    max_vertex_in_cycle_count = ones(nr_vertices,1);
 end
 
 function [cycle_weights] = get_cycle_weights(cycles)
     nr_cycles = size(cycles,1);
     cycle_lengths = get_cycle_lengths(cycles);
+    
     cycle_weights = cycle_lengths .* ones(nr_cycles, 1);
 end
 
 function [cycle_lengths] = get_cycle_lengths(cycles)
     nr_cycles = size(cycles,1);
+    
     cycle_lengths = zeros(nr_cycles,1);
     for cycle_index = 1:nr_cycles
         cycle = cycles{cycle_index};
-        cycle_lengths(cycle_index) = size(cycle,2);
+        cycle_lengths(cycle_index) = size(cycle,1);
     end
 end
 
@@ -64,6 +72,20 @@ function [variable_values, maximum] = maximize_ILP(f, A, b)
     maximum = -minimum;
 end
 
-% function [optimal_edge_indices] = get_optimal_edge_indices(optimal_cycle_indices, cycles)
-%     optimal_edge_indices = cycles;
-% end
+function [activated_edge_indices] = to_edge_indices(bitset_activated_cycles, cycles, nr_edges)   
+    activated_cycles = cycles(logical(bitset_activated_cycles));
+    nr_activated_cycles = size(activated_cycles,1);
+    
+    bitset_activated_edges = zeros(nr_edges,1);
+    for activated_cycle_index = 1:nr_activated_cycles
+        activated_edges = activated_cycles{activated_cycle_index};
+        nr_activated_edges = size(activated_edges,1);
+        
+        for activated_edge_index = 1:nr_activated_edges
+            edge_index = activated_edges(activated_edge_index);
+            bitset_activated_edges(edge_index) = 1;
+        end
+    end
+    
+    activated_edge_indices = find(bitset_activated_edges);
+end

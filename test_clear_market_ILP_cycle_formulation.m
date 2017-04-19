@@ -12,10 +12,8 @@ edges = [1,2;
 
 disp('### Cleared market. ###');
 fprintf('Maximum exchange weight: %d\n', max_exchange_weight);
-fprintf('Activated cycles: ');
+fprintf('Activated edges: ');
 for edge_index = 1:size(optimal_edge_indices, 1)
-    if (optimal_edge_indices(edge_index) == 1)
-        fprintf('%d ', edge_index);
-    end
+    fprintf('%d ', optimal_edge_indices(edge_index));
 end
 fprintf('\n');
