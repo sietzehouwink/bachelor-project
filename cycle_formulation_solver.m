@@ -7,8 +7,7 @@ function [activated_graph, max_exchange_value] = cycle_formulation_solver(graph)
     
     [activated_cycle_indices, max_exchange_value] = activate_maximizing_value(weight_vector, inequality_matrix, inequality_vector, [], []);
     
-    activated_cycles = cycles(activated_cycle_indices);
-    activated_graph = to_graph(graph.nr_vertices, activated_cycles);
+    activated_graph = get_subgraph(graph.nr_vertices, cycles, activated_cycle_indices);
 end
 
 function [cycle_lengths] = get_cycle_lengths(cycles)
@@ -34,11 +33,12 @@ function [max_vertex_in_cycle_count] = get_max_vertex_containment_count_vector(n
     max_vertex_in_cycle_count = ones(nr_vertices,1);
 end
 
-function [graph] = to_graph(nr_vertices, cycles)
+function [subgraph] = get_subgraph(nr_vertices, cycles, activated_cycle_indices)
+    activated_cycles = cycles(activated_cycle_indices);
     nr_edges = 0;
     adj_list = cell(nr_vertices,1);
-    for cycle_index = 1:size(cycles,1)
-        cycle = cycles{cycle_index};
+    for cycle_index = 1:size(activated_cycles,1)
+        cycle = activated_cycles{cycle_index};
         nr_vertices = size(cycle,1);
         nr_edges = nr_edges + nr_vertices;
         for vertex = 1:nr_vertices-1
@@ -46,5 +46,5 @@ function [graph] = to_graph(nr_vertices, cycles)
         end
         adj_list{cycle(end,1)}(end+1,1) = cycle(1,1); 
     end
-    graph = struct('nr_vertices', {nr_vertices}, 'nr_edges', {nr_edges}, 'adj_list', {adj_list});
+    subgraph = struct('nr_vertices', {nr_vertices}, 'nr_edges', {nr_edges}, 'adj_list', {adj_list});
 end
