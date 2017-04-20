@@ -1,3 +1,28 @@
+% cycle_formulation_solver(graph)
+%
+% Returns a subset of the input graph containing disjoint (closed) chains
+% with a maximal number of nodes.
+%
+% A feasible solution, i.e. a set of disjoint chains, is a restriction of 
+% the following rule to the input graph:
+% - Each vertex is contained in at most one cycle.
+%
+% The restriction can be translated to the form 'Ax <= b' as follows:
+%   Let A be a nr_vertices x nr_cycles matrix, where the rows and columns
+%   represent the vertices and cycles in some defined order, respectively.
+%   Each element (v,c) has the value 0 iff v does not occur in c, and the
+%   value 1 iff v does occur in c.
+%   Let x be an activation vector of length nr_cycles, i.e. each element c
+%   has the value 0 iff the cycle is de-activated, and the value 1 iff the
+%   cycle is activated.
+%   The product Ax results in a vector containing the containment count of
+%   each vertex. 
+%   The restriction is completed by defining b to be the ones vector.
+%
+% The solution with the maximal number of nodes is obtained by running an
+% ILP maximization over the the dot product of x with the corresponding 
+% cycle length vector.
+
 function [activated_graph, max_exchange_value] = cycle_formulation_solver(graph)
     cycles = get_cycles(graph);
     

@@ -8,9 +8,6 @@
 % - For each vertex: in-degree = out-degree     (cycle restriction)
 % - For each vertex: out-degree <= 1            (disjointness restriction)
 %
-% The solution with the maximal number of nodes is obtained by running an
-% ILP optimization over these restrictions and the input graph.
-%
 % The cycle restriction can be translated to the form 'Ax=b' as follows:
 %   Let A be a nr_vertices x nr_edges matrix, where the rows and columns
 %   represent the vertices and edges in some defined order, respectively.
@@ -18,8 +15,8 @@
 %   endpoints, the value 1 iff e has v as tail vertex, and the value -1 iff 
 %   e has v as head vertex.
 %   Let x be an activation vector of length nr_edges, i.e. each element e
-%   has the value 0 iff the edge is de-activated, and the value 1 iff e is
-%   activated.
+%   has the value 0 iff the edge is de-activated, and the value 1 iff the 
+%   edge is activated.
 %   The product Ax results in a vector containing the degree of each
 %   vertex. 
 %   The cycle restriction is completed by defining b to be the zero vector.
@@ -34,6 +31,9 @@
 %   vertex. 
 %   The disjointness restriction is completed by defining b to be the 
 %   ones vector.
+%
+% The solution with the maximal number of nodes is obtained by running an
+% ILP maximization over the sum of x.
 
 
 function [activated_graph, max_exchange_value] = edge_formulation_solver(graph)
@@ -48,8 +48,9 @@ function [activated_graph, max_exchange_value] = edge_formulation_solver(graph)
     activated_graph = get_subgraph(graph, activated_edge_indices);
 end
 
+
 function [edge_weight_vector] = get_edge_weight_vector(nr_edges)
-    edge_weight_vector = ones(nr_edges,1);
+    edge_weight_vector = ones(nr_edges,1); 
 end
 
 function [out_degree_matrix] = to_out_degree_matrix(graph)
