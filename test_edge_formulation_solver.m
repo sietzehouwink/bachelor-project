@@ -1,6 +1,8 @@
 load('graph_article', 'graph');
 
+%profile on
 [activated_graph, max_exchange_value] = edge_formulation_solver(graph);
+%profile viewer
 
 disp('### Cleared market. ###');
 fprintf('Maximum exchange value: %d\n', max_exchange_value);
