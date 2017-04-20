@@ -1,5 +1,4 @@
-adj_list = {[2];[1;3];[2;4];[3;5];[1]};
-graph = struct('nr_vertices', {5}, 'nr_edges', {8}, 'adj_list', {adj_list});
+load('graph_article', 'graph');
 
 [activated_graph, max_exchange_value] = cycle_formulation_solver(graph);
 
