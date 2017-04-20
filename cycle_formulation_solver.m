@@ -24,7 +24,7 @@
 % cycle length vector.
 
 function [activated_graph, max_exchange_value] = cycle_formulation_solver(graph)
-    cycles = get_cycles(graph);
+    cycles = to_simple_cycles(graph);
     
     cycle_weight_vector = get_cycle_lengths(cycles);
     inequality_matrix = to_vertex_containment_count_matrix(graph, cycles);

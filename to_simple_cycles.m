@@ -1,4 +1,4 @@
-% get_cycles(graph)
+% to_simple_cycles(graph)
 %
 % Returns all unique simple cycles in the input graph.
 %
@@ -6,7 +6,7 @@
 % visited vertex, a cycle is detected. As for each vertex its parent is
 % tracked, the cycle can be inferred.
 
-function [cycles] = get_cycles(graph)
+function [cycles] = to_simple_cycles(graph)
     stack = (1:graph.nr_vertices)';
     parents = zeros(graph.nr_vertices,1);
     discovered = false(graph.nr_vertices,1);
