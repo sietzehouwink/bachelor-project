@@ -26,11 +26,11 @@
 function [activated_graph, max_exchange_value] = cycle_formulation_solver(graph)
     cycles = get_cycles(graph);
     
-    weight_vector = get_cycle_lengths(cycles);
+    cycle_weight_vector = get_cycle_lengths(cycles);
     inequality_matrix = to_vertex_containment_count_matrix(graph, cycles);
     inequality_vector = get_max_vertex_containment_count_vector(graph.nr_vertices);
     
-    [activated_cycle_indices, max_exchange_value] = activate_maximizing_value(weight_vector, inequality_matrix, inequality_vector, [], []);
+    [activated_cycle_indices, max_exchange_value] = activate_maximizing_value(cycle_weight_vector, inequality_matrix, inequality_vector, [], []);
     
     activated_graph = get_subgraph(graph.nr_vertices, cycles, activated_cycle_indices);
 end
