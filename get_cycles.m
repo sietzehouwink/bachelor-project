@@ -1,3 +1,11 @@
+% get_cycles(graph)
+%
+% Returns all unique simple cycles in the input graph.
+%
+% Uses DFS to explore the graph. When the algorithm encounters an already
+% visited vertex, a cycle is detected. As for each vertex its parent is
+% tracked, the cycle can be inferred.
+
 function [cycles] = get_cycles(graph)
     stack = (1:graph.nr_vertices)';
     parents = zeros(graph.nr_vertices,1);
