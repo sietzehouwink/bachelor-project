@@ -17,7 +17,7 @@ function [cycles] = to_simple_cycles(graph)
             discovered(visiting_vertex,1) = true;
             for adjacent_vertex = graph.adj_list{visiting_vertex,1}'
                 if discovered(adjacent_vertex)
-                    cycles{end+1,1} = infer_cycle(parents, adjacent_vertex, visiting_vertex);
+                    cycles = update_cycles(cycles, parents, adjacent_vertex, visiting_vertex);
                 else
                     stack = push(stack, adjacent_vertex);
                     parents(adjacent_vertex,1) = visiting_vertex;
@@ -27,13 +27,16 @@ function [cycles] = to_simple_cycles(graph)
     end
 end
 
-function [cycle] = infer_cycle(parents, first_vertex, last_vertex)
+function [cycles] = update_cycles(cycles, parents, first_vertex, last_vertex)
     cycle = [];
-    while last_vertex ~= first_vertex
+    while last_vertex ~= first_vertex && last_vertex ~= 0
         cycle = [last_vertex; cycle];
-        last_vertex = parents(last_vertex);
+        last_vertex = parents(last_vertex,1);
     end
-    cycle = [last_vertex; cycle];
+    if last_vertex ~= 0
+        cycle = [last_vertex; cycle];
+        cycles{end+1,1} = cycle;
+    end
 end
 
 function [stack] = push(stack, value)

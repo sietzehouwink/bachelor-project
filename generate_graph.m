@@ -8,6 +8,7 @@ function [graph] = generate_graph(nr_vertices, distribution_offered_vector, dist
     for vertex_index = 1:nr_vertices
         my_offer = offered_vector(vertex_index,1);
         vertices_wanting_my_offer = find(my_offer == wanted_vector);
+        vertices_wanting_my_offer = vertices_wanting_my_offer(vertices_wanting_my_offer ~= vertex_index); % prevention for self loops.
         adj_list{vertex_index,1} = vertices_wanting_my_offer;
         nr_edges = nr_edges + size(vertices_wanting_my_offer,1);
     end
