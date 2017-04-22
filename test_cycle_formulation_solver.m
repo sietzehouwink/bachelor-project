@@ -1,3 +1,4 @@
+clear;
 load('graph_article', 'graph');
 
 %profile on

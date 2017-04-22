@@ -37,6 +37,12 @@
 
 
 function [activated_graph, max_exchange_value] = edge_formulation_solver(graph)
+    if graph.nr_edges == 0
+        activated_graph = get_subgraph(graph, []);
+        max_exchange_value = 0;
+        return;
+    end
+
     edge_weight_vector = get_edge_weight_vector(graph.nr_edges);
     inequality_matrix = to_out_degree_matrix(graph);
     inequality_vector = get_max_out_degree_vector(graph.nr_vertices);
