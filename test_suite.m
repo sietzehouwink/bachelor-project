@@ -1,4 +1,5 @@
-clear;
+clear global;
+clear variables;
 
 nr_vertices_test_set = (100:100:500)';
 execution_times_edge_formulation = zeros(size(nr_vertices_test_set));

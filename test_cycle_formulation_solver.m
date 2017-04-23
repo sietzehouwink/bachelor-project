@@ -1,4 +1,5 @@
-clear;
+clear global;
+clear variables;
 load('graph_article', 'graph');
 
 %profile on
