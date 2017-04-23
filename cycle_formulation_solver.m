@@ -26,7 +26,7 @@
 function [activated_graph, exchange_value] = cycle_formulation_solver(graph)
     nr_nodes = numnodes(graph);
     cycles = find_cycles(graph);
-    
+
     if isempty(cycles)
         activated_graph = digraph(sparse(nr_nodes, nr_nodes));
         exchange_value = 0;
