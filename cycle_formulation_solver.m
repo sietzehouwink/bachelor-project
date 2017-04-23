@@ -5,75 +5,70 @@
 %
 % A feasible solution, i.e. a set of disjoint chains, is a restriction of 
 % the following rule to the input graph:
-% - Each vertex is contained in at most one cycle.
+% - Each node is contained in at most one cycle.
 %
 % The restriction can be translated to the form 'Ax <= b' as follows:
-%   Let A be a nr_vertices x nr_cycles matrix, where the rows and columns
-%   represent the vertices and cycles in some defined order, respectively.
-%   Each element (v,c) has the value 0 iff v does not occur in c, and the
-%   value 1 iff v does occur in c.
+%   Let A be a nr_nodes x nr_cycles matrix, where the rows and columns
+%   represent the nodes and cycles in some defined order, respectively.
+%   Each element (n,c) has the value 0 iff n does not occur in c, and the
+%   value 1 iff n does occur in c.
 %   Let x be an activation vector of length nr_cycles, i.e. each element c
 %   has the value 0 iff the cycle is de-activated, and the value 1 iff the
 %   cycle is activated.
 %   The product Ax results in a vector containing the containment count of
-%   each vertex. 
+%   each node. 
 %   The restriction is completed by defining b to be the ones vector.
 %
 % The solution with the maximal number of nodes is obtained by running an
 % ILP maximization over the the dot product of x with the corresponding 
 % cycle length vector.
 
-function [activated_graph, max_exchange_value] = cycle_formulation_solver(graph)
+function [activated_graph, exchange_value] = cycle_formulation_solver(graph)
+    nr_nodes = numnodes(graph);
     cycles = find_cycles(graph);
     
-    if size(cycles,1) == 0
-        activated_graph = digraph(sparse(numnodes(graph), numnodes(graph)));
-        max_exchange_value = 0;
+    if isempty(cycles)
+        activated_graph = digraph(sparse(nr_nodes, nr_nodes));
+        exchange_value = 0;
         return;
     end
     
     cycle_weight_vector = get_cycle_lengths(cycles);
-    inequality_matrix = to_vertex_containment_count_matrix(graph, cycles);
-    inequality_vector = get_max_vertex_containment_count_vector(numnodes(graph));
+    inequality_matrix = to_node_containment_count_matrix(graph, cycles);
+    inequality_vector = get_max_node_containment_count_vector(nr_nodes);
     
-    [activated_cycle_indices, max_exchange_value] = activate_maximizing_value(cycle_weight_vector, inequality_matrix, inequality_vector, [], []);
+    [activated_cycle_indices, exchange_value] = activate_maximizing_value(cycle_weight_vector, inequality_matrix, inequality_vector, [], []);
     
-    activated_graph = get_subgraph(numnodes(graph), cycles, activated_cycle_indices);
+    activated_graph = cycles_to_graph(nr_nodes, cycles(activated_cycle_indices));
 end
 
 function [cycle_lengths] = get_cycle_lengths(cycles)
-    nr_cycles = size(cycles,1);
-    cycle_lengths = zeros(nr_cycles,1);
-    for cycle_index = 1:nr_cycles
-        cycle = cycles{cycle_index};
-        cycle_lengths(cycle_index) = size(cycle,1);
-    end
+    cycle_lengths = cellfun(@length, cycles);
 end
 
-function [vertex_containment_count_matrix] = to_vertex_containment_count_matrix(graph, cycles)
-    nr_cycles = size(cycles,1);
-    vertex_containment_count_matrix = zeros(numnodes(graph), nr_cycles);
+function [node_containment_count_matrix] = to_node_containment_count_matrix(graph, cycles)
+    nr_cycles = length(cycles);
+    nr_nodes = numnodes(graph);
+    node_containment_count_matrix = zeros(nr_nodes, nr_cycles);
     for cycle_index = 1:nr_cycles
-        for vertex = cycles{cycle_index}
-            vertex_containment_count_matrix(vertex, cycle_index) = 1;
+        for node = cycles{cycle_index}
+            node_containment_count_matrix(node, cycle_index) = 1;
         end
     end
 end
 
-function [max_vertex_in_cycle_count] = get_max_vertex_containment_count_vector(nr_vertices)
-    max_vertex_in_cycle_count = ones(nr_vertices,1);
+function [max_node_in_cycle_count] = get_max_node_containment_count_vector(nr_nodes)
+    max_node_in_cycle_count = ones(nr_nodes,1);
 end
 
-function [subgraph] = get_subgraph(nr_vertices, cycles, activated_cycle_indices)
-    activated_cycles = cycles(activated_cycle_indices);
-    adj_matrix = zeros(nr_vertices, nr_vertices);
-    for cycle_index = 1:size(activated_cycles,1)
-        cycle = activated_cycles{cycle_index};
-        nr_vertices = size(cycle,1);
-        for vertex = 1:nr_vertices-1
-            adj_matrix(cycle(vertex,1), cycle(vertex+1,1)) = 1;
+function [subgraph] = cycles_to_graph(nr_nodes, activated_cycles)
+    adj_matrix = zeros(nr_nodes, nr_nodes);
+    for cycle = activated_cycles
+        node_array = cycle{:};
+        for node_index = 1:length(node_array)-1
+            adj_matrix(node_array(node_index), node_array(node_index+1)) = 1;
         end
-        adj_matrix(cycle(end,1), cycle(1,1)) = 1;
+        adj_matrix(node_array(end), node_array(1)) = 1;
     end
     subgraph = digraph(adj_matrix);
 end
