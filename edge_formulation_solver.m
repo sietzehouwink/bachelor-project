@@ -37,21 +37,21 @@
 
 
 function [activated_graph, max_exchange_value] = edge_formulation_solver(graph)
-    if graph.nr_edges == 0
-        activated_graph = get_subgraph(graph, []);
+    if numedges(graph) == 0
+        activated_graph = digraph(sparse(numnodes(graph), numnodes(graph)));
         max_exchange_value = 0;
         return;
     end
 
-    edge_weight_vector = get_edge_weight_vector(graph.nr_edges);
+    edge_weight_vector = get_edge_weight_vector(numedges(graph));
     inequality_matrix = to_out_degree_matrix(graph);
-    inequality_vector = get_max_out_degree_vector(graph.nr_vertices);
+    inequality_vector = get_max_out_degree_vector(numnodes(graph));
     equality_matrix = to_degree_matrix(graph);
-    equality_vector = get_exact_degree_vector(graph.nr_vertices);
+    equality_vector = get_exact_degree_vector(numnodes(graph));
     
     [activated_edge_indices, max_exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector);
     
-    activated_graph = get_subgraph(graph, activated_edge_indices);
+    activated_graph = digraph(graph.Edges(activated_edge_indices,:), graph.Nodes);
 end
 
 
@@ -60,10 +60,10 @@ function [edge_weight_vector] = get_edge_weight_vector(nr_edges)
 end
 
 function [out_degree_matrix] = to_out_degree_matrix(graph)
-    out_degree_matrix = zeros(graph.nr_vertices, graph.nr_edges);
+    out_degree_matrix = zeros(numnodes(graph), numedges(graph));
     edge_index = 1;
-    for tail_vertex = 1:graph.nr_vertices
-        for head_vertex = graph.adj_list{tail_vertex}'
+    for tail_vertex = 1:numnodes(graph)
+        for head_vertex = successors(graph,tail_vertex)'
             out_degree_matrix(tail_vertex, edge_index) = 1;
             edge_index = edge_index + 1;
         end
@@ -75,10 +75,10 @@ function [max_out_degree_vector] = get_max_out_degree_vector(nr_vertices)
 end
 
 function [degree_matrix] = to_degree_matrix(graph)
-    degree_matrix = zeros(graph.nr_vertices, graph.nr_edges);
+    degree_matrix = zeros(numnodes(graph), numedges(graph));
     edge_index = 1;
-    for tail_vertex = 1:graph.nr_vertices
-        for head_vertex = graph.adj_list{tail_vertex}'
+    for tail_vertex = 1:numnodes(graph)
+        for head_vertex = successors(graph,tail_vertex)'
             degree_matrix(tail_vertex, edge_index) = 1;
             degree_matrix(head_vertex, edge_index) = -1;
             edge_index = edge_index + 1;
@@ -89,25 +89,3 @@ end
 function [exact_degree_vector] = get_exact_degree_vector(nr_vertices)
     exact_degree_vector = zeros(nr_vertices,1);
 end
-
-function [subgraph] = get_subgraph(graph, subset_edge_indices)
-    adj_list_subgraph = cell(graph.nr_vertices,1);
-    
-    sum_edges_prev_tails = 0;
-    tail_vertex = 1;
-    for edge_index = subset_edge_indices'
-        % Skip to the correct row in the adjacency list.
-        while sum_edges_prev_tails + size(graph.adj_list{tail_vertex},1) < edge_index
-            sum_edges_prev_tails = sum_edges_prev_tails + size(graph.adj_list{tail_vertex},1);
-            tail_vertex = tail_vertex + 1;
-        end
-        % Get edge from index.
-        list_offset = edge_index - sum_edges_prev_tails;
-        head_vertex = graph.adj_list{tail_vertex}(list_offset,1);
-        % Add edge to subgraph.
-        adj_list_subgraph{tail_vertex}(end+1,1) = head_vertex;
-    end
-    
-    subgraph = struct('nr_vertices', {graph.nr_vertices}, 'nr_edges', {size(subset_edge_indices,1)}, 'adj_list', {adj_list_subgraph});
-end
-

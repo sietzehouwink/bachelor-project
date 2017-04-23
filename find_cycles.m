@@ -39,7 +39,6 @@ function [cycles] = find_cycles(graph)
         stack = stack(1:end-1,1);
     end
 
-    graph = to_matlab_graph(graph);
     n = numnodes(graph);
 
     B = cell(n,1);

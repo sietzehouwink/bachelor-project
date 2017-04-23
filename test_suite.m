@@ -8,7 +8,7 @@ for index = 1:size(nr_vertices_test_set,1)
     nr_vertices = nr_vertices_test_set(index);
     graph = generate_graph(nr_vertices, nr_vertices / 10, 2);
     
-    plot(to_matlab_graph(graph));
+    plot(graph);
     
     tic;
     [~,value] = edge_formulation_solver(graph);

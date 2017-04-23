@@ -8,9 +8,7 @@ load('graph_article', 'graph');
 disp('### Cleared market. ###');
 fprintf('Maximum exchange value: %d\n', max_exchange_value);
 fprintf('Activated edges: ');
-for tail_vertex = 1:activated_graph.nr_vertices
-    for head_vertex = activated_graph.adj_list{tail_vertex}'
-        fprintf('[%d %d] ', tail_vertex, head_vertex);
-    end
+for edge = table2array(activated_graph.Edges(:,1))'
+   	fprintf('[%d %d] ', edge(1,1), edge(2,1));
 end
 fprintf('\n');
