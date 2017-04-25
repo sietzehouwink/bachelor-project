@@ -1,6 +1,6 @@
 % cycle_formulation_solver(graph)
 %
-% Returns a subset of the input graph containing disjoint (closed) chains
+% Returns a subset of the input graph containing disjoint closed chains
 % with a maximal number of nodes.
 %
 % A feasible solution, i.e. a set of disjoint chains, is a restriction of 
@@ -26,12 +26,6 @@
 function [activated_graph, exchange_value] = cycle_formulation_solver(graph, timeout)
     nr_nodes = numnodes(graph);
     cycles = find_cycles(graph, timeout);
-
-    if isempty(cycles)
-        activated_graph = digraph(sparse(nr_nodes, nr_nodes));
-        exchange_value = 0;
-        return;
-    end
     
     cycle_weight_vector = get_cycle_lengths(cycles);
     inequality_matrix = to_node_containment_count_matrix(graph, cycles);

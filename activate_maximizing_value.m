@@ -1,6 +1,12 @@
 function [activated, maximum] = activate_maximizing_value(weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout)
     nr_variables = size(inequality_matrix, 2);
     
+    if nr_variables == 0
+        activated = [];
+        maximum = 0;
+        return;
+    end
+    
     to_integer_restricted_bitmap = ones(nr_variables,1);
     lowerbound_vector = zeros(nr_variables,1);
     upperbound_vector = ones(nr_variables,1);

@@ -1,6 +1,6 @@
 % edge_formulation_solver(graph)
 %
-% Returns a subset of the input graph containing disjoint (closed) chains
+% Returns a subset of the input graph containing disjoint closed chains
 % with a maximal number of nodes.
 %
 % A feasible solution, i.e. a set of disjoint chains, is a restriction of 
@@ -38,12 +38,6 @@
 function [activated_graph, exchange_value] = edge_formulation_solver(graph, timeout)
     nr_nodes = numnodes(graph);
     nr_edges = numedges(graph);
-
-    if nr_edges == 0
-        activated_graph = digraph(sparse(nr_nodes, nr_nodes));
-        exchange_value = 0;
-        return;
-    end
 
     edge_weight_vector = get_edge_weight_vector(nr_edges);
     inequality_matrix = to_out_degree_matrix(graph);
