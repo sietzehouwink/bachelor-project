@@ -35,7 +35,7 @@
 % The solution with the maximal number of nodes is obtained by running an
 % ILP maximization over the sum of x.
 
-function [activated_graph, exchange_value] = edge_formulation_solver(graph)
+function [activated_graph, exchange_value] = edge_formulation_solver(graph, timeout)
     nr_nodes = numnodes(graph);
     nr_edges = numedges(graph);
 
@@ -51,7 +51,7 @@ function [activated_graph, exchange_value] = edge_formulation_solver(graph)
     equality_matrix = to_degree_matrix(graph);
     equality_vector = get_exact_degree_vector(nr_nodes);
     
-    [activated_edge_indices, exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector);
+    [activated_edge_indices, exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout);
     
     activated_graph = digraph(graph.Edges(activated_edge_indices,:), graph.Nodes);
 end

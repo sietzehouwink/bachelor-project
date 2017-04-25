@@ -1,4 +1,4 @@
-function [cycles] = find_cycles(graph)
+function [cycles] = find_cycles(graph, timeout)
 
     function f = circuit(v)
         
@@ -18,6 +18,9 @@ function [cycles] = find_cycles(graph)
         for w = successors(A_k, v)'
             if w == s
                 cycles{end+1,1} = stack;
+                if toc > timeout
+                    return;
+                end
                 f = true;
             elseif ~blocked(w)
                 if circuit(w)
@@ -39,6 +42,8 @@ function [cycles] = find_cycles(graph)
         stack = stack(1:end-1,1);
     end
 
+    tic;
+        
     n = numnodes(graph);
 
     B = cell(n,1);
@@ -65,6 +70,9 @@ function [cycles] = find_cycles(graph)
         B(enabled_vertices_bitset) = {[]};
 
         circuit(s);
+        if toc > timeout
+            return;
+        end
         s = s + 1;
 
     end 

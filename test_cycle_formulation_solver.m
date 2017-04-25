@@ -3,7 +3,7 @@ clear variables;
 load('graph_article', 'graph');
 
 %profile on
-[activated_graph, max_exchange_value] = cycle_formulation_solver(graph);
+[activated_graph, max_exchange_value] = cycle_formulation_solver(graph, 1);
 %profile viewer
 
 disp('### Cleared market. ###');

@@ -23,9 +23,9 @@
 % ILP maximization over the the dot product of x with the corresponding 
 % cycle length vector.
 
-function [activated_graph, exchange_value] = cycle_formulation_solver(graph)
+function [activated_graph, exchange_value] = cycle_formulation_solver(graph, timeout)
     nr_nodes = numnodes(graph);
-    cycles = find_cycles(graph);
+    cycles = find_cycles(graph, timeout);
 
     if isempty(cycles)
         activated_graph = digraph(sparse(nr_nodes, nr_nodes));
@@ -37,7 +37,7 @@ function [activated_graph, exchange_value] = cycle_formulation_solver(graph)
     inequality_matrix = to_node_containment_count_matrix(graph, cycles);
     inequality_vector = get_max_node_containment_count_vector(nr_nodes);
     
-    [activated_cycle_indices, exchange_value] = activate_maximizing_value(cycle_weight_vector, inequality_matrix, inequality_vector, [], []);
+    [activated_cycle_indices, exchange_value] = activate_maximizing_value(cycle_weight_vector, inequality_matrix, inequality_vector, [], [], timeout);
     
     activated_graph = cycles_to_graph(nr_nodes, cycles(activated_cycle_indices));
 end

@@ -3,7 +3,10 @@ function [] = graphs_parser()
     line = fgets(fileID);
     i = 1;
     while ~isempty(line)
-        [attributes, edges, remaining_string] = parse_line(line);
+        if i == 204
+            
+        end
+        [attributes, edges, idx] = parse_line(line,1);
         attributes
         i
         i = i + 1;
@@ -12,107 +15,125 @@ function [] = graphs_parser()
 
 end
 
-function [matched, line] = match(character, line)
-    if line(1) == character
-        line = line(2:end);
+function [matched, idx] = match(character, line, idx)
+    if line(idx) == character
+        idx = idx+1;
         matched = true;
     else
         matched = false;
     end
 end
 
-function [line] = accept(string, line)
-    [matched, line] = match(string, line);
+function [idx] = accept(string, line, idx)
+    [matched, idx] = match(string, line, idx);
     if ~matched
         error('Could not accept character.');
     end
 end
 
-function [attributes, edges, line] = parse_line(line)
-    line = accept('{', line);
-    [attributes, line] = parse_attributes(line);
-    line = accept(',', line);
-    line = accept(' ', line);
-    [edges, line] = parse_edges(line);
-    line = accept('}', line);
+function [attributes, edges, idx] = parse_line(line, idx)
+    idx = accept('{', line, idx);
+    [attributes, idx] = parse_attributes(line, idx);
+    idx = accept(',', line, idx);
+    idx = accept(' ', line, idx);
+    [edges, idx] = parse_edges(line, idx);
 end
 
-function [attributes, line] = parse_attributes(line)
-    [matched, line] = match('{', line);
+function [attributes, idx] = parse_attributes(line, idx)
+    [matched, idx] = match('{', line, idx);
     if matched
-        [name, line] = parse_name(line);
-        line = accept(',', line);
-        line = accept(' ', line);
-        [info, line] = parse_info(line);
-        line = accept('}', line);
+        [name, idx] = parse_name(line, idx);
+        idx = accept(',', line, idx);
+        idx = accept(' ', line, idx);
+        [info, idx] = parse_info(line, idx);
+        while true
+            [matched, idx] = match(',', line, idx);
+            if ~matched
+                break;
+            end
+            [~,idx] = parse_info(line,idx);
+        end
+        idx = accept('}', line, idx);
         attributes = {name; info};
     else
-        [name, line] = parse_name(line);
+        [name, idx] = parse_name(line, idx);
         attributes = {name};
     end
 end
 
-function [name, line] = parse_name(line)
+function [name, idx] = parse_name(line, idx)
     indices = regexp(line,'"');
     name = line(indices(1)+1:indices(2)-1);
-    line = line(indices(2)+1:end);
+    idx = indices(2)+1;
 end
 
-function [info, line] = parse_info(line)
+function [info, idx] = parse_info(line, idx)
     info = [];
-    [matched, line] = match('{', line);
+    [matched, idx] = match('{', line, idx);
     if matched
-        [integer, line] = parse_integer(line);
+        [integer, idx] = parse_integer(line, idx);
         info(end+1,1) = integer;
         while true
-            [matched, line] = match(',', line);
+            [matched, idx] = match(',', line, idx);
             if ~matched
                 break;
             end
-            line = accept(' ', line);
-            [integer, line] = parse_integer(line);
+            idx = accept(' ', line, idx);
+            [integer, idx] = parse_integer(line, idx);
             info(end+1,1) = integer;
         end
-        line = accept('}', line);
+        idx = accept('}', line, idx);
     else
-        [integer, line] = parse_integer(line);
+        [integer, idx] = parse_integer(line, idx);
         info(end+1,1) = integer;
     end
 end
 
-function [edges, line] = parse_edges(line)
-    edges = {};
-    line = accept('{', line);
-    [matched, line] = match('}', line);
-    if matched
-        return;
-    end
-    [edge, line] = parse_edge(line);
-    edges{end+1} = edge;
-    while true
-        [matched, line] = match(',', line);
-        if ~matched
-            break;
-        end
-        line = accept(' ', line);
-        [edge, line] = parse_edge(line);
-        edges{end+1} = edge;
-    end
-    line = accept('}', line);
+function [edges, idx] = parse_edges(line, idx)
+    line = strrep(line(idx:end-1),'{','');
+    line = strrep(line,'}','');
+    line = strrep(line,',','');
+    [A,n] = sscanf(line,'%d');
+    edges = reshape(A,2,n/2);
+    idx = length(line)-1;
 end
 
-function [edge, line] = parse_edge(line) 
-    line = accept('{', line);
-    [integer, line] = parse_integer(line);
+% function [edges, idx] = parse_edges(line, idx)
+%     edges = cell(length(line),1);
+%     cell_idx = 1;
+%     idx = accept('{', line, idx);
+%     [matched, idx] = match('}', line, idx);
+%     if matched
+%         return;
+%     end
+%     [edge, idx] = parse_edge(line, idx);
+%     edges{cell_idx} = edge;
+%     cell_idx = cell_idx + 1;
+%     while true
+%         [matched, idx] = match(',', line, idx);
+%         if ~matched
+%             break;
+%         end
+%         idx = accept(' ', line, idx);
+%         [edge, idx] = parse_edge(line, idx);
+%         edges{cell_idx} = edge;
+%         cell_idx = cell_idx + 1;
+%     end
+%     idx = accept('}', line, idx);
+% end
+
+function [edge, idx] = parse_edge(line, idx) 
+    idx = accept('{', line, idx);
+    [integer, idx] = parse_integer(line, idx);
     edge(1) = integer;
-    line = accept(',', line);
-    line = accept(' ', line);
-    [integer, line] = parse_integer(line);
+    idx = accept(',', line, idx);
+    idx = accept(' ', line, idx);
+    [integer, idx] = parse_integer(line, idx);
     edge(2) = integer;
-    line = accept('}', line);
+    idx = accept('}', line, idx);
 end
 
-function [integer, line] = parse_integer(line)
-    [integer,~,~,nextIndex] = sscanf(line, '%d');
-    line = line(nextIndex:end);
+function [integer, idx] = parse_integer(line, idx)
+    [integer,~,~,nextIndex] = sscanf(line(idx:end), '%d');
+    idx = idx + nextIndex - 1;
 end
