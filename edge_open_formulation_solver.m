@@ -1,7 +1,9 @@
 % edge_open_formulation_solver(graph, donating_node_indices, timeout)
 %
-% Returns a subset of the input graph containing disjoint (open) chains
-% with a maximal number of nodes, or returns when exceeding the timeout.
+% Returns a subset of the input graph containing disjoint open or closed 
+% chains with a maximal number of nodes, where some nodes are restricted to
+% be the starting node of a chain, or returns when the execution time 
+% exceeds 'timeout'.
 %
 % A feasible solution, i.e. a set of disjoint chains, is a restriction of 
 % the following rules to the input graph:
@@ -13,16 +15,18 @@
 %   - out-degree - in-degree <= 0   (4) Only donate (possibly) when receiving.
 %
 % A restriction is translated to the form 'Ax (<)= b' as follows:
-%   'A' : a nr_restrictions x nr_edges matrix.
-%   'x' : a nr_edges vector.
-%   'b' : a nr_restrictions vector.
-%
-%   Let each element of 'x' have the value 1 if the edge is activated, and 
-%   0 otherwise. For some restriction, the product 'Ax' should then be a
-%   vector expressing the value of the left hand side of this restriction
-%   for each edge. The incidence matrix of the graph allows us to construct
-%   'A' for each restriction. 'b' should then be a vector expressing the
-%   value of the (constant) right hand side of this restriction.
+%   'A' : A nr_restrictions x nr_edges matrix, where the rows represent the
+%         restrictions in some defined order (1), and the columns
+%         represent the edges of the graph in some defined order (2).
+%   'x' : A nr_edges vector, where each element represents the activation
+%         of the edges in the graph in the order defined by (2). The
+%         values in this vector are determined by the optimization.
+%   'b' : A nr_restrictions vector, where each element represents the
+%         restriction of the right hand side of the restriction, for
+%         each restriction, in the order defined by (1).
+%   We construct 'A' in such a way that 'Ax' represents the 
+%   value of the left hand side of the restriction, for each node of the
+%   graph, in the order defined by (1).
 %
 %   In the case of multiple restrictions of a certain type (equality or 
 %   inequality), we vertically concatenate the matrices and vectors of 

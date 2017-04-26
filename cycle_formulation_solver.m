@@ -9,9 +9,9 @@
 % - Each node is contained in at most one cycle.
 %
 % The restriction is translated to the form 'Ax <= b' as follows:
-%   'A' : S nr_nodes x nr_cycles matrix, where each row represents the
-%         nodes of the graph in some defined order (1), and each column
-%         represents the cycles in the graph in some defined order (2).
+%   'A' : A nr_nodes x nr_cycles matrix, where the rows represent the
+%         nodes of the graph in some defined order (1), and the columns
+%         represent the cycles in the graph in some defined order (2).
 %   'x' : A nr_cycles vector, where each element represents the activation
 %         of the cycles in the graph in the order defined by (2). The
 %         values in this vector are determined by the optimization.
