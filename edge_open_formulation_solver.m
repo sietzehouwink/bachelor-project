@@ -34,17 +34,15 @@
 
 function [activated_graph, exchange_value] = edge_open_formulation_solver(graph, donating_node_indices, timeout)
     edge_weight_vector = ones(numedges(graph),1);
-    [inequality_matrix, inequality_vector] = get_inequality_constraints(graph, donating_node_indices);
-    [equality_matrix, equality_vector] = get_equality_constraints(graph, donating_node_indices);
+    [inequality_matrix, inequality_vector] = get_all_inequality_constraints(graph, donating_node_indices);
+    [equality_matrix, equality_vector] = get_donating_indegree_constraints(graph, donating_node_indices);
     
     [activated_edge_indices, exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout);
     
     activated_graph = digraph(graph.Edges(activated_edge_indices,:), graph.Nodes);
 end
 
-% First level constraint generation.
-
-function [inequality_matrix, inequality_vector] = get_inequality_constraints(graph, donating_node_indices)
+function [inequality_matrix, inequality_vector] = get_all_inequality_constraints(graph, donating_node_indices)
     trading_node_indices = setdiff(1:numnodes(graph), donating_node_indices);
 
     [inequality_matrix_1, inequality_vector_1] = get_donating_outdegree_constraints(graph, donating_node_indices);
@@ -54,12 +52,6 @@ function [inequality_matrix, inequality_vector] = get_inequality_constraints(gra
     inequality_matrix = [inequality_matrix_1; inequality_matrix_2; inequality_matrix_3];   
     inequality_vector = [inequality_vector_1; inequality_vector_2; inequality_vector_3];
 end
-
-function [equality_matrix, equality_vector] = get_equality_constraints(graph, donating_node_indices)
-    [equality_matrix, equality_vector] = get_donating_indegree_constraints(graph, donating_node_indices);
-end
-
-% Second level constraint generation.
 
 function [inequality_matrix, inequality_vector] = get_donating_outdegree_constraints(graph, donating_node_indices)
     incidence_graph_matrix = incidence(graph);
@@ -88,27 +80,3 @@ function [equality_matrix, equality_vector] = get_donating_indegree_constraints(
     equality_matrix = incidence_to_indegree_matrix(incidence_donating_matrix);
     equality_vector = zeros(length(donating_node_indices),1);
 end
-
-% Incidence matrix to degree calculating matrices.
-
-function [outdegree_matrix] = incidence_to_outdegree_matrix(incidence_matrix)
-    [nr_nodes, nr_edges] = size(incidence_matrix);
-    outdegree_matrix = sparse(nr_nodes, nr_edges);
-    outdegree_matrix(incidence_matrix == -1) = 1;
-end
-
-function [indegree_matrix] = incidence_to_indegree_matrix(incidence_matrix)
-    [nr_nodes, nr_edges] = size(incidence_matrix);
-    indegree_matrix = sparse(nr_nodes, nr_edges);
-    indegree_matrix(incidence_matrix == 1) = 1;
-end
-
-function [outdegree_minus_indegree_matrix] = incidence_to_outdegree_minus_indegree_matrix(incidence_matrix)
-    outdegree_minus_indegree_matrix = -incidence_matrix;
-end
-
-
-
-
-
-

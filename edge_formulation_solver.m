@@ -36,50 +36,23 @@
 % ILP maximization over the sum of x.
 
 function [activated_graph, exchange_value] = edge_formulation_solver(graph, timeout)
-    nr_nodes = numnodes(graph);
-    nr_edges = numedges(graph);
-
-    edge_weight_vector = get_edge_weight_vector(nr_edges);
-    inequality_matrix = to_out_degree_matrix(graph);
-    inequality_vector = get_max_out_degree_vector(nr_nodes);
-    equality_matrix = to_degree_matrix(graph);
-    equality_vector = get_exact_degree_vector(nr_nodes);
+    edge_weight_vector = ones(numedges(graph),1);
+    [inequality_matrix, inequality_vector] = get_outdegree_constraints(graph);
+    [equality_matrix, equality_vector] = get_indegree_equal_to_outdegree_constraints(graph);
     
     [activated_edge_indices, exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout);
     
     activated_graph = digraph(graph.Edges(activated_edge_indices,:), graph.Nodes);
 end
 
-
-function [edge_weight_vector] = get_edge_weight_vector(nr_edges)
-    edge_weight_vector = ones(nr_edges,1); 
+function [inequality_matrix, inequality_vector] = get_outdegree_constraints(graph)
+    incidence_matrix = incidence(graph);
+    inequality_matrix = incidence_to_outdegree_matrix(incidence_matrix);
+    inequality_vector = ones(numnodes(graph),1);
 end
 
-function [out_degree_matrix] = to_out_degree_matrix(graph)
-    nr_nodes = numnodes(graph);
-    nr_edges = numedges(graph);
-    out_degree_matrix = zeros(nr_nodes, nr_edges);
-    for edge_index = 1:nr_edges
-        tail_node = graph.Edges{:,1}(edge_index);
-        out_degree_matrix(tail_node, edge_index) = 1;
-    end
-end
-
-function [max_out_degree_vector] = get_max_out_degree_vector(nr_nodes)
-    max_out_degree_vector = ones(nr_nodes,1);
-end
-
-function [degree_matrix] = to_degree_matrix(graph)
-    nr_nodes = numnodes(graph);
-    nr_edges = numedges(graph);
-    degree_matrix = zeros(nr_nodes, nr_edges);
-    for edge_index = 1:nr_edges
-        edge = graph.Edges{:,1}(edge_index,:);
-        degree_matrix(edge(1), edge_index) = 1;
-        degree_matrix(edge(2), edge_index) = -1;
-    end
-end
-
-function [exact_degree_vector] = get_exact_degree_vector(nr_nodes)
-    exact_degree_vector = zeros(nr_nodes,1);
+function [equality_matrix, equality_vector] = get_indegree_equal_to_outdegree_constraints(graph)
+    incidence_matrix = incidence(graph);
+    equality_matrix = incidence_to_outdegree_minus_indegree_matrix(incidence_matrix);
+    equality_vector = zeros(numnodes(graph),1);
 end

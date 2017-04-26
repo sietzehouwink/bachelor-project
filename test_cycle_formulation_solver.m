@@ -2,9 +2,9 @@ clear global;
 clear variables;
 load('graph_article', 'graph');
 
-%profile on
+profile on
 [activated_graph, max_exchange_value] = cycle_formulation_solver(graph, 1);
-%profile viewer
+profile viewer
 
 disp('### Cleared market. ###');
 fprintf('Maximum exchange value: %d\n', max_exchange_value);
