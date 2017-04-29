@@ -65,7 +65,8 @@ function [cycles, timed_out] = find_cycles(graph, timeout)
         enabled_vertices_bitset = logical(bins == bins(s));
         enabled_vertices_bitset(1:s-1,1) = false;
         matrix = adjacency(graph);
-        matrix(~enabled_vertices_bitset, ~enabled_vertices_bitset) = 0;
+        matrix(~enabled_vertices_bitset,:) = 0;
+        matrix(:,~enabled_vertices_bitset) = 0;
         A_k = digraph(matrix);
         
         blocked(enabled_vertices_bitset) = false;
