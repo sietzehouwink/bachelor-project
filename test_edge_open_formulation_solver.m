@@ -2,10 +2,9 @@ clear global;
 clear variables;
 load('graph_article', 'graph');
 
-profile on
+%profile on
 [activated_graph, max_exchange_value] = edge_open_formulation_solver(graph, 5, 1);
-
-profile viewer
+%profile viewer
 
 disp('### Cleared market. ###');
 fprintf('Maximum exchange value: %d\n', max_exchange_value);

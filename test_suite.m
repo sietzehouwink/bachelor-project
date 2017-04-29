@@ -9,7 +9,9 @@ nr_graphs = length(test_graphs);
 execution_times_edge_formulation = zeros(nr_graphs,1);
 execution_times_cycle_formulation = zeros(nr_graphs,1);
 
-for graph_index = 1:50
+max_graph = 200;
+
+for graph_index = 1:max_graph
     
     graph = test_graphs{graph_index};
     
@@ -29,8 +31,8 @@ end
 
 figure('Name','Edge / cycle formulation performance.');
 hold on;
-set(gca,'yTick', 1:50,'yticklabel',names(1:50));
-barh([execution_times_edge_formulation(1:50) execution_times_cycle_formulation(1:50)]);
+set(gca,'yTick', 1:max_graph,'yticklabel',names(1:max_graph));
+barh([execution_times_edge_formulation(1:max_graph) execution_times_cycle_formulation(1:max_graph)]);
 title('Edge / cycle formulation performance.');
 xlabel('Execution time (s)');
 ylabel('Graph type');
