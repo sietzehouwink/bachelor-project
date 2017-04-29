@@ -38,7 +38,7 @@ function [activated_graph, exchange_value, timed_out] = cycle_formulation_solver
     
     cycle_weight_vector = cellfun(@length, cycles);
     [inequality_matrix, inequality_vector] = get_node_in_cycle_containment_constraints(numnodes(graph), cycles);
-
+    
     [activated_cycle_indices, exchange_value, timed_out] = activate_maximizing_value(cycle_weight_vector, inequality_matrix, inequality_vector, [], [], max(0,timeout-toc(timer)));
     if timed_out
         activated_graph = digraph();
@@ -59,13 +59,4 @@ function [node_containment_count_matrix] = cycles_to_node_containment_count_matr
     for cycle_index = 1:length(cycles)
         node_containment_count_matrix(cycles{cycle_index}, cycle_index) = 1;
     end
-end
-
-function [graph] = cycles_to_graph(nr_nodes, cycles)
-    adjacency_matrix = sparse(nr_nodes, nr_nodes);
-    for cycle = cycles
-        node_vector = cycle{:};
-        adjacency_matrix(sub2ind(size(adjacency_matrix), node_vector(1:end), [node_vector(2:end); node_vector(1)])) = 1;
-    end
-    graph = digraph(adjacency_matrix);
 end
