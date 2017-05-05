@@ -1,28 +1,23 @@
-function [paths] = find_paths(graph, starting_nodes, min_length, max_length)
-    paths = {};
-    visited = false(1, numnodes(graph));
-    for starting_node = starting_nodes'
-        paths = [paths; find_paths_DFS(graph, starting_node, visited, min_length, max_length)];
-    end
+function [paths] = find_paths(graph, from_nodes, min_nr_nodes, max_nr_nodes)
+    paths_per_node = arrayfun(@(starting_node) find_paths_DFS(graph, starting_node, false(1, numnodes(graph)), min_nr_nodes, max_nr_nodes), from_nodes, 'UniformOutput', false);
+    paths = vertcat(paths_per_node{:});
 end
 
-function [paths] = find_paths_DFS(graph, starting_node, visited, min_length, max_length)
+function [paths] = find_paths_DFS(graph, from_node, visited, min_nr_nodes, max_nr_nodes)
     paths = {};
-    if visited(starting_node)
+    if visited(from_node)
         return;
     end
-    if min_length == 1
-        paths = {starting_node};
+    if min_nr_nodes <= 1
+        paths = {from_node};
     end
-    if max_length == 1
+    if max_nr_nodes == 1
         return;
     end
-
-    visited(starting_node) = true;
-    for successor = successors(graph, starting_node)'
-        recursive_paths = find_paths_DFS(graph, successor, visited, max(min_length-1,1), max_length-1);
-        found_paths = cellfun(@(recursive_path) [starting_node; recursive_path], recursive_paths, 'UniformOutput', false);
-        paths = [paths; found_paths];
-    end
+    visited(from_node) = true;
+    node_successors = successors(graph, from_node);
+    recursive_paths_per_node = arrayfun(@(node_successor) find_paths_DFS(graph, node_successor, visited, min_nr_nodes-1, max_nr_nodes-1), node_successors, 'UniformOutput', false);
+    recursive_paths = vertcat(recursive_paths_per_node{:});
+    paths = [paths; cellfun(@(recursive_path) [from_node; recursive_path], recursive_paths, 'UniformOutput', false)];
 end
 
