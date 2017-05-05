@@ -9,7 +9,7 @@ nr_graphs = length(test_graphs);
 execution_times_edge_formulation = zeros(nr_graphs,1);
 execution_times_cycle_formulation = zeros(nr_graphs,1);
 
-max_graph = 200;
+max_graph = 50;
 
 for graph_index = 1:max_graph
     
