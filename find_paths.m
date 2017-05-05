@@ -8,19 +8,21 @@ end
 
 function [paths] = find_paths_DFS(graph, starting_node, visited, min_length, max_length)
     paths = {};
-    if max_length == 0
+    if visited(starting_node)
         return;
     end
+    if min_length == 1
+        paths = {starting_node};
+    end
+    if max_length == 1
+        return;
+    end
+
     visited(starting_node) = true;
     for successor = successors(graph, starting_node)'
-        if ~visited(successor)
-            for path = find_paths_DFS(graph, successor, visited, max(min_length-1,1), max_length-1)'
-                paths{end+1,1} = [starting_node; path{:}];
-            end
-        end
-    end
-    if min_length == 1
-        paths{end+1,1} = starting_node;
+        recursive_paths = find_paths_DFS(graph, successor, visited, max(min_length-1,1), max_length-1);
+        found_paths = cellfun(@(recursive_path) [starting_node; recursive_path], recursive_paths, 'UniformOutput', false);
+        paths = [paths; found_paths];
     end
 end
 
