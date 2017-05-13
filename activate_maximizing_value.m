@@ -1,9 +1,10 @@
 function [activated, maximum, timed_out] = activate_maximizing_value(weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout)
-    nr_variables = size(inequality_matrix, 2);
+    nr_variables = size(weight_vector, 1);
     
     if nr_variables == 0
         activated = [];
         maximum = 0;
+        timed_out = false;
         return;
     end
     
