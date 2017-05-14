@@ -14,7 +14,14 @@ function [activated, maximum, timed_out] = activate_maximizing_value(weight_vect
     options = optimoptions('intlinprog', 'Display', 'none', 'MaxTime', timeout);
     
     [activated_bitmap, minimum, exitflag, ~] = intlinprog(-weight_vector, to_integer_restricted_bitmap, inequality_matrix, inequality_vector, equality_matrix, equality_vector, lowerbound_vector, upperbound_vector, options);
+    
+    timed_out = exitflag <= 0;
+    if timed_out
+        activated = [];
+        maximum = 0;
+        return;
+    end
+    
     activated = find(activated_bitmap);
     maximum = -minimum;
-    timed_out = exitflag <= 0;
 end
