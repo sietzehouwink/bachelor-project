@@ -1,6 +1,6 @@
 clear global;
 clear variables;
-load('graph_article_glorie', 'graph');
+load('graph_article', 'graph');
 
 profile on
 [activated_graph, max_exchange_value, timed_out] = bipartite_formulation_solver(graph, 1);
