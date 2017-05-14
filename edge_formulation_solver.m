@@ -1,63 +1,44 @@
-% edge_formulation_solver(graph, timeout)
-%
-% Returns a subset of the input graph containing disjoint closed chains
-% with a maximal number of nodes, or returns when the execution time 
-% exceeds 'timeout'.
-%
-% A feasible solution, i.e. a set of disjoint chains, is a restriction of 
-% the following rules to the input graph:
-% - For each node: indegree = outdegree      (cycle restriction)
-% - For each node: outdegree <= 1            (disjointness restriction)
-%
-% The cycle restriction is translated to the form 'Ax <= b' as follows:
-%   'A' : A nr_nodes x nr_edges matrix, where the rows represent the
-%         nodes of the graph in some defined order (1), and the columns
-%         represent the edges of the graph in some defined order (2).
-%   'x' : A nr_edges vector, where each element represents the activation
-%         of the edges in the graph in the order defined by (2). The
-%         values in this vector are determined by the optimization.
-%   'b' : A nr_nodes vector, where each element represents the restriction
-%         of outdegree - indegree count, for each node of the graph, in the
-%         order defined by (1).
-%   We construct 'A' in such a way that 'Ax' represents the 
-%   outdegree - indegree, for each node of the graph,
-%   in the order defined by (1).
-%
-% The disjointness restriction is translated to the form 'Ax = b' as
-% follows:
-%   'A' : A nr_nodes x nr_edges matrix, where the rows represent the
-%         nodes of the graph in some defined order (1), and the columns
-%         represent the edges of the graph in the order defined by (2).
-%   'x' : A nr_edges vector, where each element represents the activation
-%         of the edges in the graph in the order defined by (2). The
-%         values in this vector are determined by the optimization.
-%   'b' : A nr_nodes vector, where each element represents the restriction
-%         of outdegree count, for each node of the graph, in the order 
-%         defined by (1).
-%   We construct 'A' in such a way that 'Ax' represents the 
-%   outdegree, for each node of the graph, in the order defined by (1).
-%
-% The solution with the maximal number of nodes is obtained by running an
-% ILP maximization over the sum of x.
-
 function [activated_graph, exchange_value] = edge_formulation_solver(graph, timeout)
-    edge_weight_vector = ones(numedges(graph),1);
-    [inequality_matrix, inequality_vector] = get_outdegree_constraints(graph);
-    [equality_matrix, equality_vector] = get_indegree_equal_to_outdegree_constraints(graph);
+    edge_weight_vector = graph.Edges.Weight;
+    [inequality_matrix, inequality_vector] = get_inequality_constraints(graph);
     
-    [activated_edge_indices, exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout);
+    [activated_edge_indices, exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, [], [], timeout);
     
     activated_graph = digraph(graph.Edges(activated_edge_indices,:), graph.Nodes);
 end
 
-function [inequality_matrix, inequality_vector] = get_outdegree_constraints(graph)
-    incidence_matrix = incidence(graph);
-    inequality_matrix = incidence_to_outdegree_matrix(incidence_matrix);
-    inequality_vector = ones(numnodes(graph),1);
+function [inequality_matrix, inequality_vector] = get_inequality_constraints(graph)
+    [inequality_matrix_1, inequality_vector_1] = get_outdegree_constraints(graph);
+    [inequality_matrix_2, inequality_vector_2] = get_outdegree_minus_indegree_constraints(graph);
+    [inequality_matrix_3, inequality_vector_3] = get_indegree_constraints(graph);
+    
+    inequality_matrix = [inequality_matrix_1; inequality_matrix_2; inequality_matrix_3];   
+    inequality_vector = [inequality_vector_1; inequality_vector_2; inequality_vector_3];
 end
 
-function [equality_matrix, equality_vector] = get_indegree_equal_to_outdegree_constraints(graph)
+function [inequality_matrix, inequality_vector] = get_outdegree_constraints(graph)
+    nodes_donor_trader = find(strcmp(graph.Nodes.AgentType, 'donor') | strcmp(graph.Nodes.AgentType, 'trader'));
     incidence_matrix = incidence(graph);
-    equality_matrix = incidence_to_outdegree_minus_indegree_matrix(incidence_matrix);
-    equality_vector = zeros(numnodes(graph),1);
+    incidence_matrix_donor_trader = incidence_matrix(nodes_donor_trader,:);
+    
+    inequality_matrix = incidence_to_outdegree_matrix(incidence_matrix_donor_trader);
+    inequality_vector = ones(length(nodes_donor_trader),1);
+end
+
+function [inequality_matrix, inequality_vector] = get_outdegree_minus_indegree_constraints(graph)
+    nodes_trader = find(strcmp(graph.Nodes.AgentType, 'trader'));
+    incidence_matrix = incidence(graph);
+    incidence_matrix_trader = incidence_matrix(nodes_trader,:);
+    
+    inequality_matrix = incidence_to_outdegree_minus_indegree_matrix(incidence_matrix_trader);
+    inequality_vector = zeros(length(nodes_trader),1);
+end
+
+function [inequality_matrix, inequality_vector] = get_indegree_constraints(graph)
+    nodes_receiver = find(strcmp(graph.Nodes.AgentType, 'receiver'));
+    incidence_matrix = incidence(graph);
+    incidence_matrix_receiver = incidence_matrix(nodes_receiver,:);
+    
+    inequality_matrix = incidence_to_indegree_matrix(incidence_matrix_receiver);
+    inequality_vector = ones(length(nodes_receiver),1);
 end
