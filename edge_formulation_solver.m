@@ -1,8 +1,8 @@
-function [activated_graph, exchange_value] = edge_formulation_solver(graph, timeout)
+function [activated_graph, exchange_value, timed_out] = edge_formulation_solver(graph, timeout)
     edge_weight_vector = graph.Edges.Weight;
     [inequality_matrix, inequality_vector] = get_inequality_constraints(graph);
     
-    [activated_edge_indices, exchange_value] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, [], [], timeout);
+    [activated_edge_indices, exchange_value, timed_out] = activate_maximizing_value(edge_weight_vector, inequality_matrix, inequality_vector, [], [], timeout);
     
     activated_graph = digraph(graph.Edges(activated_edge_indices,:), graph.Nodes);
 end
