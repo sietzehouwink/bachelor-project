@@ -1,4 +1,4 @@
-function [cycles] = find_cycles_2(graph, from_nodes, min_length, max_length)
+function [cycles] = find_cycles(graph, from_nodes, min_length, max_length)
     cycles_per_node = cell(numnodes(graph),1);
     for node = from_nodes'
         cycles_per_node{node} = find_cycles_DFS(graph, node, false(numnodes(graph),1), min_length, max_length, node);
