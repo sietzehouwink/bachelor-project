@@ -1,4 +1,4 @@
-function [graphs] = get_test_graphs()
+function [graphs] = parse_graphs()
     fileID = fopen('graphs.txt');
     graphs = {};
     while true
