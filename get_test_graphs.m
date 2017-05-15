@@ -1,41 +1,57 @@
-function [graphs, names] = get_test_graphs()
-
+function [graphs] = get_test_graphs()
     fileID = fopen('graphs.txt');
-
-    excluded = {'Balaban10Cage', 'Balaban11Cage', 'BarnetteBosakLederbergGraph', 'BiggsSmithGraph', 'BipartiteKneser', 'BrinkmannGraph'};
-
     graphs = {};
-    names = {};
-
-    line = fgets(fileID);
-    i = 1;
-    while line ~= -1
-        i
-        i = i+1;
-        
-        indices = regexp(line,'"');
-        name = line(indices(1)+1:indices(2)-1);
-        names{end+1} = name;
-%         if ~isempty(strmatch(name, excluded))
-%             continue;
-%         else
-%             excluded{end+1} = name; % Exclude further of same type.
-%             names{end+1} = name;
-%         end
-        indices = regexp(line,'{{\d');
-        if ~isempty(indices)
-            indices
-            line = line(indices(end):end);
-            line = strrep(line,'{','');
-            line = strrep(line,'}','');
-            line = strrep(line,',','');
-            [A,n] = sscanf(line,'%d');
-            A = reshape(A,2,n/2);
-            graph = digraph(A(1,:), A(2,:));
-            graphs{end+1} = graph;
-        end
+    while true
         line = fgets(fileID);
+        if line == -1
+            break;
+        end
+        
+        [digraph, description] = parse_line(line);
+        
+        struct.description = description;
+        struct.digraph = digraph;
+        
+        graphs{end+1} = struct;
     end
-
 end
 
+function [digraph, description] = parse_line(line)
+    description = parse_description(line(2:end));
+    digraph = parse_digraph(line(length(description)+2:end));
+end
+
+function [description, idx] = parse_description(line)
+    idx = 2;
+    if line(1) == '"'
+        while true
+            if line(idx+3) == '{'
+                break;
+            end
+            idx = idx+1;
+        end
+    else
+        cnt_brackets = 1;
+        while true
+            if line(idx) == '{'
+                cnt_brackets = cnt_brackets + 1;
+            elseif line(idx) == '}'
+                cnt_brackets = cnt_brackets - 1;
+            end
+            if cnt_brackets == 0
+                break;
+            end
+            idx = idx+1;
+        end
+    end
+    description = line(1:idx);
+end
+
+function [digraph_] = parse_digraph(line)
+    edges = sscanf(erase(line,{'{','}',','}), '%d', [2,Inf])';
+    if isempty(edges)
+        digraph_ = digraph();
+    else
+        digraph_ = digraph(table(edges, 'VariableNames', {'EndNodes'}));
+    end
+end
