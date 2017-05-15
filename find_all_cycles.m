@@ -1,4 +1,4 @@
-function [cycles, timed_out] = find_cycles(graph, timeout)
+function [cycles, timed_out] = find_all_cycles(graph, timeout)
 
     function f = circuit(v)
         
