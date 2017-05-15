@@ -8,7 +8,7 @@ function [activated, maximum, timed_out] = activate_maximizing_value(weight_vect
         return;
     end
     
-    to_integer_restricted_bitmap = ones(nr_variables,1);
+    to_integer_restricted_bitmap = (1:nr_variables)';
     lowerbound_vector = zeros(nr_variables,1);
     upperbound_vector = ones(nr_variables,1);
     options = optimoptions('intlinprog', 'Display', 'none', 'MaxTime', timeout);
