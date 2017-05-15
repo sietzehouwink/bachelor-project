@@ -1,4 +1,4 @@
-function [activated_digraph, exchange_value, timed_out] = excluding_cycles_chains_solver(digraph_, max_edges_cycle, max_edges_chain, timeout_find_cycles_chains, timeout_solver)
+function [activated_digraph, exchange_value, timed_out] = restricted_edge_formulation_excluding_cycles_chains_solver(digraph_, max_edges_cycle, max_edges_chain, timeout_find_cycles_chains, timeout_solver)
     [inequality_matrix, inequality_vector, timed_out] = get_inequality_constraints(digraph_, max_edges_cycle, max_edges_chain, timeout_find_cycles_chains);
     if timed_out
         activated_digraph = digraph();
@@ -28,7 +28,7 @@ function [inequality_matrix, inequality_vector, timed_out] = get_inequality_cons
         inequality_vector = [];
         return;
     end
-    [inequality_matrix_3, inequality_vector_3] = get_unrestricted_constraints(digraph);
+    [inequality_matrix_3, inequality_vector_3] = get_unrestricted_edge_formulation_constraints(digraph);
     inequality_matrix = [inequality_matrix_1; inequality_matrix_2; inequality_matrix_3];
     inequality_vector = [inequality_vector_1; inequality_vector_2; inequality_vector_3];
 end

@@ -1,31 +1,3 @@
-% cycle_formulation_solver(graph, timeout)
-%
-% Returns a subset of the input graph containing disjoint closed chains
-% with a maximal number of nodes, or returns when the execution time 
-% exceeds 'timeout'.
-%
-% A feasible solution, i.e. a set of disjoint chains, is a restriction of 
-% the following rule to the input graph:
-% - Each node is contained in at most one cycle.
-%
-% The restriction is translated to the form 'Ax <= b' as follows:
-%   'A' : A nr_nodes x nr_cycles matrix, where the rows represent the
-%         nodes of the graph in some defined order (1), and the columns
-%         represent the cycles in the graph in some defined order (2).
-%   'x' : A nr_cycles vector, where each element represents the activation
-%         of the cycles in the graph in the order defined by (2). The
-%         values in this vector are determined by the optimization.
-%   'b' : A nr_nodes vector, where each element represents the restriction
-%         of cycle containment count, for each node of the graph, in the
-%         order defined by (1).
-%   We construct 'A' in such a way that 'Ax' represents the cycle
-%   containment count, for each node of the graph, in the order defined by
-%   (1).
-%
-% The solution with the maximal number of nodes is obtained by running an
-% ILP maximization over the the dot product of 'x' with the corresponding 
-% cycle length vector.
-
 function [activated_graph, exchange_value, timed_out] = cycle_formulation_solver(graph, timeout)
     timer = tic;
     

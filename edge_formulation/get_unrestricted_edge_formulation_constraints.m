@@ -1,4 +1,4 @@
-function [inequality_matrix, inequality_vector] = get_unrestricted_constraints(digraph)
+function [inequality_matrix, inequality_vector] = get_unrestricted_edge_formulation_constraints(digraph)
     [inequality_matrix_1, inequality_vector_1] = get_outdegree_constraints(digraph);
     [inequality_matrix_2, inequality_vector_2] = get_outdegree_minus_indegree_constraints(digraph);
     [inequality_matrix_3, inequality_vector_3] = get_indegree_constraints(digraph);

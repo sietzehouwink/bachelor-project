@@ -1,4 +1,4 @@
-function [activated_digraph, exchange_value, timed_out] = excluding_paths_solver(digraph_, max_edges_path, timeout_find_paths, timeout_solver)
+function [activated_digraph, exchange_value, timed_out] = restricted_edge_formulation_excluding_paths_solver(digraph_, max_edges_path, timeout_find_paths, timeout_solver)
     [inequality_matrix, inequality_vector, timed_out] = get_inequality_constraints(digraph_, max_edges_path, timeout_find_paths);
     if timed_out
         activated_digraph = digraph();
@@ -20,7 +20,7 @@ function [inequality_matrix, inequality_vector, timed_out] = get_inequality_cons
         inequality_vector = [];
         return;
     end
-    [inequality_matrix_2, inequality_vector_2] = get_unrestricted_constraints(digraph);
+    [inequality_matrix_2, inequality_vector_2] = get_unrestricted_edge_formulation_constraints(digraph);
     inequality_matrix = [inequality_matrix_1; inequality_matrix_2];
     inequality_vector = [inequality_vector_1; inequality_vector_2];
 end
