@@ -1,4 +1,5 @@
 function [cycles, timed_out] = find_cycles(digraph_, from_nodes, min_edges, max_edges, timeout)
+    [min_edges, max_edges] = tighten_bounds(digraph_, min_edges, max_edges);
     tic;
     cycles_per_node = cell(length(from_nodes),1);
     for index_from_node = 1:length(from_nodes)
@@ -21,9 +22,15 @@ function [cycles, timed_out] = find_cycles(digraph_, from_nodes, min_edges, max_
     timed_out = false;
 end
 
+function [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges)
+    min_edges = max(2, min_edges);
+    nodes_trader = find(strcmp(digraph.Nodes.AgentType, 'trader'));
+    max_edges = min(length(nodes_trader), max_edges);
+end
+
 function [cycles] = find_cycles_DFS(digraph, from_node, visited, min_edges, max_edges, first_node_cycle)
     if from_node == first_node_cycle && min_edges <= 0
-        cycles = {[]};
+        cycles = {[from_node]};
         return;
     end
     if visited(from_node) || max_edges == 0

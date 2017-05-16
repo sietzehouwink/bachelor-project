@@ -1,4 +1,5 @@
 function [paths, timed_out] = find_paths(digraph, from_nodes, min_edges, max_edges, timeout)
+    [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges);
     tic;
     paths_per_node = cell(length(from_nodes),1);
     for index_from_node = 1:length(from_nodes)
@@ -14,6 +15,12 @@ function [paths, timed_out] = find_paths(digraph, from_nodes, min_edges, max_edg
         paths = {};
     end
     timed_out = false;
+end
+
+function [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges)
+    min_edges = max(1, min_edges);
+    nodes_trader = find(strcmp(digraph.Nodes.AgentType, 'trader'));
+    max_edges = min(length(nodes_trader)+1, max_edges);
 end
 
 function [paths] = find_paths_DFS(digraph, from_node, visited, min_edges, max_edges)

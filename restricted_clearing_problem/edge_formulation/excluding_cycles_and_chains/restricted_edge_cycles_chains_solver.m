@@ -14,54 +14,29 @@ function [activated_digraph, exchange_value, timed_out] = restricted_edge_cycles
 end
 
 function [inequality_matrix, inequality_vector, timed_out] = get_inequality_constraints(digraph, max_edges_cycle, max_edges_chain, timeout_find_cycles_chains)
-    tic;
-    [inequality_matrix_1, inequality_vector_1, timed_out] = get_excluded_cycles_constraints(digraph, max_edges_cycle, timeout_find_cycles_chains);
-    if timed_out    
-        inequality_matrix = [];
-        inequality_vector = [];
-        return;
-    end
-    timeout_find_cycles_chains = max(timeout_find_cycles_chains - toc,0);
-    [inequality_matrix_2, inequality_vector_2, timed_out] = get_excluded_chains_constraints(digraph, max_edges_chain, timeout_find_cycles_chains);
-    if timed_out    
-        inequality_matrix = [];
-        inequality_vector = [];
-        return;
-    end
-    [inequality_matrix_3, inequality_vector_3] = get_unrestricted_edge_constraints(digraph);
-    inequality_matrix = [inequality_matrix_1; inequality_matrix_2; inequality_matrix_3];
-    inequality_vector = [inequality_vector_1; inequality_vector_2; inequality_vector_3];
-end
-
-function [inequality_matrix, inequality_vector, timed_out] = get_excluded_cycles_constraints(digraph, max_edges_cycle, timeout)
-    nodes_trader = find(strcmp(digraph.Nodes.AgentType, 'trader'));
-    [cycles, timed_out] = find_cycles(digraph, nodes_trader, max_edges_cycle+1, length(nodes_trader), timeout);
+    [inequality_matrix_1, inequality_vector_1, timed_out] = get_excluded_cycle_chain_constraints(digraph, max_edges_cycle, max_edges_chain, timeout_find_cycles_chains);
     if timed_out
         inequality_matrix = [];
         inequality_vector = [];
         return;
     end
-    inequality_matrix = zeros(length(cycles), numedges(digraph));
-    for index_cycle = 1:length(cycles)
-        cycle = cycles{index_cycle};
-        edges_in_cycle = findedge(digraph, cycle, [cycle(2:end); cycle(1)]);
-        inequality_matrix(index_cycle,edges_in_cycle) = 1;
-    end
-    inequality_vector = cellfun(@length, cycles) - 1;
+    [inequality_matrix_2, inequality_vector_2] = get_unrestricted_edge_constraints(digraph);
+    inequality_matrix = [inequality_matrix_1; inequality_matrix_2];
+    inequality_vector = [inequality_vector_1; inequality_vector_2];
 end
 
-function [inequality_matrix, inequality_vector, timed_out] = get_excluded_chains_constraints(digraph, max_edges_chain, timeout)
-    [chains, timed_out] = find_paths(digraph, find(strcmp(digraph.Nodes.AgentType, 'donor')), max_edges_chain+1, numnodes(digraph)-1, timeout);
+function [inequality_matrix, inequality_vector, timed_out] = get_excluded_cycle_chain_constraints(digraph, max_edges_cycle, max_edges_chain, timeout)
+    [cycles_chains, timed_out] = get_cycles_chains(digraph, max_edges_cycle+1, Inf, max_edges_chain+1, Inf, timeout);
     if timed_out
         inequality_matrix = [];
         inequality_vector = [];
         return;
     end
-    inequality_matrix = zeros(length(chains), numedges(digraph));
-    for index_path = 1:length(chains)
-        path = chains{index_path};
-        edges_in_path = findedge(digraph, path(1:end-1),path(2:end));
-        inequality_matrix(index_path,edges_in_path) = 1;
+    inequality_matrix = zeros(length(cycles_chains), numedges(digraph));
+    for index_cycle = 1:length(cycles_chains)
+        cycle_chain = cycles_chains{index_cycle};
+        edges_in_cycle = findedge(digraph, cycle_chain(1:end-1), cycle_chain(2:end));
+        inequality_matrix(index_cycle, edges_in_cycle) = 1;
     end
-    inequality_vector = cellfun(@length, chains) - 2;
+    inequality_vector = cellfun(@length, cycles_chains) - 2;
 end
