@@ -1,5 +1,9 @@
 function [cycles, timed_out] = find_cycles(digraph_, from_nodes, min_edges, max_edges, timeout)
     [min_edges, max_edges] = tighten_bounds(digraph_, min_edges, max_edges);
+    if min_edges > max_edges
+        cycles = {};
+        return;
+    end
     tic;
     cycles_per_node = cell(length(from_nodes),1);
     for index_from_node = 1:length(from_nodes)

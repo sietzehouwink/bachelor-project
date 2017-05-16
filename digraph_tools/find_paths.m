@@ -1,5 +1,10 @@
 function [paths, timed_out] = find_paths(digraph, from_nodes, min_edges, max_edges, timeout)
     [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges);
+    if min_edges > max_edges
+        paths = {};
+        timed_out = false;
+        return;
+    end
     tic;
     paths_per_node = cell(length(from_nodes),1);
     for index_from_node = 1:length(from_nodes)
