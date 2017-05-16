@@ -18,10 +18,3 @@ function [inequality_matrix, inequality_vector] = get_containment_count_constrai
     inequality_matrix = get_node_containment_count_matrix(cycles_chains, nr_nodes);
     inequality_vector = ones(nr_nodes,1);
 end
-
-function [node_containment_count_matrix] = get_node_containment_count_matrix(cycles_chains, nr_nodes)
-    node_containment_count_matrix = zeros(nr_nodes, length(cycles_chains));
-    for cycle_index = 1:length(cycles_chains)
-        node_containment_count_matrix(cycles_chains{cycle_index}, cycle_index) = 1;
-    end
-end
