@@ -1,10 +1,13 @@
-function [activated_digraph, exchange_value, timed_out] = unrestricted_bipartite_solver(digraph, timeout)
+function [activated_digraph, exchange_value, timed_out, core_exec_time] = unrestricted_bipartite_solver(digraph, timeout)
     bipartite_graph = to_provided_wanted_bipartite_graph(digraph);
     [equality_matrix, equality_vector] = get_trader_wanted_constraints(bipartite_graph);
     [inequality_matrix, inequality_vector] = get_remaining_constraints(bipartite_graph);
+    timer = tic;
     [activated_edge_indices, exchange_value, timed_out] = activate_maximizing_value(bipartite_graph.Edges.Weight, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout);
+    core_exec_time = toc(timer);
     if timed_out
         activated_digraph = digraph();
+        core_exec_time = 0;
         return;
     end
     activated_bipartite_graph = graph(bipartite_graph.Edges(activated_edge_indices,:), bipartite_graph.Nodes);

@@ -5,11 +5,11 @@ function [paths, timed_out] = find_paths(digraph, from_nodes, min_edges, max_edg
         timed_out = false;
         return;
     end
-    tic;
+    timer = tic;
     paths_per_node = cell(length(from_nodes),1);
     for index_from_node = 1:length(from_nodes)
         paths_per_node{index_from_node} = find_paths_DFS(digraph, from_nodes(index_from_node), false(numnodes(digraph),1), min_edges, max_edges);
-        if toc > timeout
+        if toc(timer) > timeout
             paths = {};
             timed_out = true;
             return;

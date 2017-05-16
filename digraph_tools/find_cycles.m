@@ -4,7 +4,7 @@ function [cycles, timed_out] = find_cycles(digraph_, from_nodes, min_edges, max_
         cycles = {};
         return;
     end
-    tic;
+    timer = tic;
     cycles_per_node = cell(length(from_nodes),1);
     for index_from_node = 1:length(from_nodes)
         from_node = from_nodes(index_from_node);
@@ -13,7 +13,7 @@ function [cycles, timed_out] = find_cycles(digraph_, from_nodes, min_edges, max_
         adjacency_matrix(from_node,:) = 0;
         adjacency_matrix(:,from_node) = 0;
         digraph_ = digraph(adjacency_matrix);
-        if toc > timeout
+        if toc(timer) > timeout
             cycles = {};
             timed_out = true;
             return;
