@@ -1,6 +1,7 @@
-function [digraphs] = parse_test_case_database()
+function [digraphs, descriptions] = parse_test_case_database()
     fileID = fopen('test_case_database.txt');
     digraphs = {};
+    descriptions = {};
     while true
         line = fgets(fileID);
         if line == -1
@@ -8,11 +9,8 @@ function [digraphs] = parse_test_case_database()
         end
         
         [digraph, description] = parse_line(line);
-        
-        struct.description = description;
-        struct.digraph = digraph;
-        
-        digraphs{end+1} = struct;
+        digraphs{end+1,1} = digraph;
+        descriptions{end+1,1} = description;
     end
 end
 
@@ -52,6 +50,7 @@ function [digraph_] = parse_digraph(line)
     if isempty(edges)
         digraph_ = digraph();
     else
-        digraph_ = digraph(table(edges, 'VariableNames', {'EndNodes'}));
+        digraph_ = digraph(edges(:,1), edges(:,2), 1);
+        digraph_.Nodes.AgentType = repmat({'trader'}, numnodes(digraph_), 1);
     end
 end

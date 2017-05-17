@@ -2,6 +2,7 @@ function [cycles, timed_out] = find_cycles(digraph_, from_nodes, min_edges, max_
     [min_edges, max_edges] = tighten_bounds(digraph_, min_edges, max_edges);
     if min_edges > max_edges
         cycles = {};
+        timed_out = false;
         return;
     end
     timer = tic;

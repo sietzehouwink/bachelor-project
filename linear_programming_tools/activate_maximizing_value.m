@@ -1,4 +1,4 @@
-function [activated, maximum, timed_out] = activate_maximizing_value(weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout)
+function [activated, maximum, timed_out] = activate_maximizing_value(weight_vector, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout, optimoptions_)
     nr_variables = size(weight_vector, 1);
     
     if nr_variables == 0
@@ -11,7 +11,9 @@ function [activated, maximum, timed_out] = activate_maximizing_value(weight_vect
     to_integer_restricted_bitmap = (1:nr_variables)';
     lowerbound_vector = zeros(nr_variables,1);
     upperbound_vector = ones(nr_variables,1);
-    options = optimoptions('intlinprog', 'Display', 'none', 'MaxTime', timeout);
+    options = optimoptions(optimoptions_, 'Display', 'none', 'MaxTime', timeout);
+    
+    % LPPreprocess none
     
     [activated_bitmap, minimum, exitflag, ~] = intlinprog(-weight_vector, to_integer_restricted_bitmap, inequality_matrix, inequality_vector, equality_matrix, equality_vector, lowerbound_vector, upperbound_vector, options);
     

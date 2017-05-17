@@ -1,4 +1,4 @@
-function [activated_digraph, exchange_value, timed_out, core_exec_time] = restricted_edge_paths_solver(digraph_, max_edges_path, timeout_find_paths, timeout_solver)
+function [activated_digraph, exchange_value, timed_out, core_exec_time] = restricted_edge_paths_solver(digraph_, max_edges_path, timeout_find_paths, timeout_solver, optimoptions)
     [inequality_matrix, inequality_vector, timed_out] = get_inequality_constraints(digraph_, max_edges_path, timeout_find_paths);
     if timed_out
         activated_digraph = digraph();
@@ -7,7 +7,7 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = restri
         return;
     end
     timer = tic;
-    [activated_edge_indices, exchange_value, timed_out] = activate_maximizing_value(digraph_.Edges.Weight, inequality_matrix, inequality_vector, [], [], timeout_solver);
+    [activated_edge_indices, exchange_value, timed_out] = activate_maximizing_value(ones(numedges(digraph_),1), inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
     core_exec_time = toc(timer);
     if timed_out
         activated_digraph = digraph();

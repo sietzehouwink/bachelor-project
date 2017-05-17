@@ -16,6 +16,7 @@ end
 function [edge_table] = get_provided_wanted_bipartite_graph_edge_table(digraph)
     edge_table = digraph.Edges;
     edge_table.EndNodes(:,2) = edge_table.EndNodes(:,2) + numnodes(digraph);
+    edge_table.Weight = ones(height(edge_table),1);
 end
 
 function [edge_table] = get_trader_provided_wanted_zero_weight_edge_table(digraph)
