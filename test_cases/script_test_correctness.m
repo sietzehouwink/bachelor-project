@@ -1,6 +1,6 @@
 clear global;
 clear variables;
-load('correctness.mat', 'digraphs')
+load('digraphs.mat', 'digraphs')
 
 disallowed_path_length = 3;
 max_cycle_length = 3;
@@ -19,6 +19,6 @@ solvers = {
 
 for index_solver = 1:length(solvers)
     solver = solvers{index_solver};
-    [activated_digraphs, exchange_values, timed_outs, core_exec_times] = evaluate_solver_for_digraphs(digraphs, solver);
+    [activated_digraphs, exchange_values, timed_outs, core_exec_times] = evaluate(digraphs, solver);
     disp(exchange_values');
 end
