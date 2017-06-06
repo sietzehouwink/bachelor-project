@@ -8,13 +8,10 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = restri
         return;
     end
     
-    timer = tic;
-    [activated_edge_indices, exchange_value, timed_out] = activate_maximizing_value(ones(numedges(digraph_),1), inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
-    core_exec_time = toc(timer);
+    [activated_edge_indices, exchange_value, timed_out, core_exec_time] = activate_maximizing_value(ones(numedges(digraph_),1), inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
     
     if timed_out
         activated_digraph = digraph();
-        core_exec_time = 0;
         return;
     end
     

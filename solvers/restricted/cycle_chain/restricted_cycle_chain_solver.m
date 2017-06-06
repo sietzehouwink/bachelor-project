@@ -10,13 +10,10 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = restri
     
     [inequality_matrix, inequality_vector] = get_containment_count_constraints(cycles_chains, numnodes(digraph_));
     
-    timer = tic;
-    [activated_cycle_indices, exchange_value, timed_out] = activate_maximizing_value(cellfun(@length, cycles_chains)-1, inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
-    core_exec_time = toc(timer);
+    [activated_cycle_indices, exchange_value, timed_out, core_exec_time] = activate_maximizing_value(cellfun(@length, cycles_chains)-1, inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
     
     if timed_out
         activated_digraph = digraph();
-        core_exec_time = 0;
         return;
     end
     

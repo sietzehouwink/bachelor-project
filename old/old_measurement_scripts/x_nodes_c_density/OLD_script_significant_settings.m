@@ -4,7 +4,7 @@ clear variables;
 timeout = 10;
 
 % FULL RANGE UNRESTRICTED EDGE BIPARTITE
-% NO SIGNIFICANT SETTINGS FOUND
+% 
 solver = @(digraph, optimoptions_) unrestricted_edge_bipartite_solver(digraph, timeout, optimoptions_);
 min_nr_edges = 11000;
 max_nr_edges = 25000;

@@ -4,13 +4,10 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = unrest
     [equality_matrix, equality_vector] = get_trader_wanted_constraints(bipartite_graph);
     [inequality_matrix, inequality_vector] = get_remaining_constraints(bipartite_graph);
     
-    timer = tic;
-    [activated_edge_indices, exchange_value, timed_out] = activate_maximizing_value(bipartite_graph.Edges.Weight, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout, optimoptions);
-    core_exec_time = toc(timer);
+    [activated_edge_indices, exchange_value, timed_out, core_exec_time] = activate_maximizing_value(bipartite_graph.Edges.Weight, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout, optimoptions);
     
     if timed_out
         activated_digraph = digraph();
-        core_exec_time = 0;
         return;
     end
     
