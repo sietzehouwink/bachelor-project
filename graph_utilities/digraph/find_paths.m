@@ -1,29 +1,12 @@
-function [paths, timed_out] = find_paths(digraph, from_nodes, min_edges, max_edges, timeout)
-    [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges);
-    
+function [paths, timed_out] = find_paths(digraph_, start_nodes, min_edges, max_edges, timeout)
+    [min_edges, max_edges] = tighten_bounds(digraph_, min_edges, max_edges);  
     if min_edges > max_edges
         paths = {};
         timed_out = false;
         return;
     end
     
-    timer = tic;
-    paths_per_node = cell(length(from_nodes),1);
-    for index_from_node = 1:length(from_nodes)
-        paths_per_node{index_from_node} = find_paths_DFS(digraph, from_nodes(index_from_node), false(numnodes(digraph),1), min_edges, max_edges, timer, timeout);
-    end
-    
-    if toc(timer) > timeout
-        paths = {};
-        timed_out = true;
-        return;
-    end
-    
-    paths = vertcat(paths_per_node{:});
-    if isempty(paths)
-        paths = {};
-    end
-    timed_out = false;
+    [paths, timed_out] = get_paths(digraph_, start_nodes, min_edges, max_edges, timeout);
 end
 
 function [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges)
@@ -32,27 +15,54 @@ function [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges)
     max_edges = min(length(nodes_trader)+1, max_edges);
 end
 
-function [paths] = find_paths_DFS(digraph, from_node, visited, min_edges, max_edges, timer, timeout)
+function [paths, timed_out] = get_paths(digraph_, start_nodes, min_edges, max_edges, timeout)
+    timer = tic;
+    adjacency_matrix = full(adjacency(digraph_));
     paths = {};
-    if toc(timer) > timeout
-        return;
+    for start_node = start_nodes'
+        paths{end+1} = get_paths_from(start_node, adjacency_matrix, min_edges, max_edges);
+        if toc(timer) > timeout
+            paths = {};
+            timed_out = true;
+            return;
+        end
     end
-    if visited(from_node)
-        return;
-    end
-    if min_edges <= 0
-        paths = {from_node};
-    end
-    if max_edges == 0
-        return;
-    end
-    visited(from_node) = true;
-    node_successors = successors(digraph, from_node);
-    recursive_paths_per_node = arrayfun(@(node_successor) find_paths_DFS(digraph, node_successor, visited, min_edges-1, max_edges-1, timer, timeout), node_successors, 'UniformOutput', false);
-    recursive_paths = vertcat(recursive_paths_per_node{:});
-    if isempty(recursive_paths)
-        return;
-    end
-    paths = [paths; cellfun(@(recursive_path) [from_node; recursive_path], recursive_paths, 'UniformOutput', false)];
+    paths = vertcat(paths{:});
+    timed_out = false;
 end
 
+function [paths] = get_paths_from(start_node, adjacency_matrix, min_edges, max_edges)
+    paths = {};
+    paths_matrix = (start_node);
+    for edges = 1:max_edges
+        paths_matrix = branch(paths_matrix, adjacency_matrix);
+        if isempty(paths_matrix)
+            break;
+        end
+        if edges >= min_edges
+            paths{end+1} = matrix_to_cells(paths_matrix);
+        end     
+    end
+    paths = vertcat(paths{:});
+end
+
+function [branched] = branch(paths, adjacency_matrix)
+    branched = {};
+    for index_path = 1:size(paths,1)
+        path = paths(index_path,:);
+        successors_path = find(adjacency_matrix(path(end),:));
+        branch_nodes = successors_path(~ismember(successors_path, path));
+        if isempty(branch_nodes)
+            continue;
+        end
+        branched{end+1} = [repmat(path, length(branch_nodes), 1) branch_nodes'];
+    end
+    branched = vertcat(branched{:});
+end
+
+function [cells] = matrix_to_cells(matrix)
+    cells = cell(size(matrix,1), 1);
+    for row = 1:size(matrix,1)
+        cells{row} = matrix(row,:)';
+    end
+end

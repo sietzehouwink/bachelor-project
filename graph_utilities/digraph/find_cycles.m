@@ -1,34 +1,12 @@
-function [cycles, timed_out] = find_cycles(digraph_, from_nodes, min_edges, max_edges, timeout)
-    [min_edges, max_edges] = tighten_bounds(digraph_, min_edges, max_edges);
-    
+function [cycles, timed_out] = find_cycles(digraph_, start_nodes, min_edges, max_edges, timeout)
+    [min_edges, max_edges] = tighten_bounds(digraph_, min_edges, max_edges);  
     if min_edges > max_edges
         cycles = {};
         timed_out = false;
         return;
     end
     
-    timer = tic;
-    cycles_per_node = cell(length(from_nodes),1);
-    for index_from_node = 1:length(from_nodes)
-        from_node = from_nodes(index_from_node);
-        cycles_per_node{from_node} = find_cycles_DFS(digraph_, from_node, false(numnodes(digraph_),1), min_edges, max_edges, from_node, timer, timeout);
-        adjacency_matrix = adjacency(digraph_);
-        adjacency_matrix(from_node,:) = 0;
-        adjacency_matrix(:,from_node) = 0;
-        digraph_ = digraph(adjacency_matrix);
-    end
-    
-    if toc(timer) > timeout
-        cycles = {};
-        timed_out = true;
-        return;
-    end
-    
-    cycles = vertcat(cycles_per_node{:});
-    if isempty(cycles)
-        cycles = {};
-    end
-    timed_out = false;
+    [cycles, timed_out] = get_cycles(digraph_, start_nodes, min_edges, max_edges, timeout);
 end
 
 function [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges)
@@ -37,26 +15,76 @@ function [min_edges, max_edges] = tighten_bounds(digraph, min_edges, max_edges)
     max_edges = min(length(nodes_trader), max_edges);
 end
 
-function [cycles] = find_cycles_DFS(digraph, from_node, visited, min_edges, max_edges, first_node_cycle, timer, timeout)
-    if toc(timer) > timeout
+function [cycles, timed_out] = get_cycles(digraph_, start_nodes, min_edges, max_edges, timeout)
+    timer = tic;
+    adjacency_matrix = full(adjacency(digraph_));
+    cycles = {};
+    for index_start_node = 1:length(start_nodes)
+        start_node = start_nodes(index_start_node);
+        cycles{end+1} = get_cycles_from(start_node, adjacency_matrix, min_edges, max_edges, timeout - toc(timer));
+        adjacency_matrix(start_node,:) = 0;
+        adjacency_matrix(:,start_node) = 0;
+        if toc(timer) > timeout
+            cycles = {};
+            timed_out = true;
+            return;
+        end
+    end
+    cycles = vertcat(cycles{:});
+    timed_out = false;
+end
+
+function [cycles] = get_cycles_from(start_node, adjacency_matrix, min_edges, max_edges, timeout)
+    timer = tic;
+    cycles = {};
+    paths = (start_node);
+    for edges = 1:max_edges-1
+        paths = branch(paths, adjacency_matrix);
+        if isempty(paths)
+            break;
+        end
+        if edges+1 >= min_edges
+            cycles{end+1} = close_paths(paths, adjacency_matrix);
+        end  
+        if toc(timer) > timeout
+            cycles = {};
+            return;
+        end
+    end
+    cycles = vertcat(cycles{:});
+end
+
+function [branched] = branch(paths, adjacency_matrix)
+    branched = {};
+    for index_path = 1:size(paths,1)
+        path = paths(index_path,:);
+        successors_path = find(adjacency_matrix(path(end),:));
+        branch_nodes = successors_path(~ismember(successors_path, path));
+        if isempty(branch_nodes)
+            continue;
+        end
+        branched{end+1} = [repmat(path, length(branch_nodes), 1) branch_nodes'];
+    end
+    branched = vertcat(branched{:});
+end
+
+function [cycles] = close_paths(paths, adjacency_matrix)
+    start_node = paths(1,1);
+    last_node_paths = paths(:,end);
+    predecessors_start_node = find(adjacency_matrix(:,start_node));
+    indices_closing_paths = ismember(last_node_paths, predecessors_start_node);
+    if isempty(indices_closing_paths)
         cycles = {};
         return;
     end
-    if from_node == first_node_cycle && min_edges <= 0
-        cycles = {[from_node]};
-        return;
+    closing_paths = paths(indices_closing_paths,:);
+    matrix_cycles = [closing_paths repelem(start_node, size(closing_paths,1), 1)];
+    cycles = matrix_to_cells(matrix_cycles);
+end
+
+function [cells] = matrix_to_cells(matrix)
+    cells = cell(size(matrix,1), 1);
+    for row = 1:size(matrix,1)
+        cells{row} = matrix(row,:)';
     end
-    if visited(from_node) || max_edges == 0
-        cycles = {};
-        return;
-    end
-    node_successors = successors(digraph, from_node);
-    if isempty(node_successors)
-        cycles = {};
-        return;
-    end
-    visited(from_node) = true;
-    recursive_paths_per_node = arrayfun(@(node_successor) find_cycles_DFS(digraph, node_successor, visited, min_edges-1, max_edges-1, first_node_cycle, timer, timeout), node_successors, 'UniformOutput', false);
-    recursive_paths = vertcat(recursive_paths_per_node{:});
-    cycles = cellfun(@(recursive_path) [from_node; recursive_path], recursive_paths, 'UniformOutput', false);
 end

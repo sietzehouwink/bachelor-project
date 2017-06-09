@@ -8,14 +8,14 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = restri
         return;
     end
     
-    [activated_edge_indices, exchange_value, timed_out, core_exec_time] = activate_maximizing_value(ones(numedges(digraph_),1), inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
+    [setting_edges, exchange_value, timed_out, core_exec_time] = BILP_solver(ones(numedges(digraph_),1), inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
     
     if timed_out
         activated_digraph = digraph();
         return;
     end
     
-    activated_digraph = digraph(digraph_.Edges(activated_edge_indices,:), digraph_.Nodes);
+    activated_digraph = digraph(digraph_.Edges(logical(setting_edges),:), digraph_.Nodes);
 end
 
 function [inequality_matrix, inequality_vector, timed_out] = get_inequality_constraints(digraph, disallowed_path_length, timeout_find_paths)
@@ -38,8 +38,8 @@ function [inequality_matrix, inequality_vector, timed_out] = get_disallowed_path
     inequality_matrix = zeros(length(paths), numedges(digraph));
     for index_path = 1:length(paths)
         path = paths{index_path};
-        edges_in_path = findedge(digraph, path(1:end-1),path(2:end));
-        inequality_matrix(index_path,edges_in_path) = 1;
+        edges_in_path = findedge(digraph, path(1:end-1), path(2:end));
+        inequality_matrix(index_path, edges_in_path) = 1;
     end
     
     inequality_vector = (disallowed_path_length-1) * ones(length(paths),1);

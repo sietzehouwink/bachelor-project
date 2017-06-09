@@ -4,15 +4,20 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = unrest
     [equality_matrix, equality_vector] = get_trader_wanted_constraints(bipartite_graph);
     [inequality_matrix, inequality_vector] = get_remaining_constraints(bipartite_graph);
     
-    [activated_edge_indices, exchange_value, timed_out, core_exec_time] = activate_maximizing_value(bipartite_graph.Edges.Weight, inequality_matrix, inequality_vector, equality_matrix, equality_vector, timeout, optimoptions);
+    weights = bipartite_graph.Edges.Weight;
+    lower_bounds = zeros(length(weights),1);
+    upper_bounds = ones(length(weights),1);
+    [setting_edges, maximum, timed_out, core_exec_time] = LP_solver(weights, inequality_matrix, inequality_vector, equality_matrix, equality_vector, lower_bounds, upper_bounds, timeout, optimoptions);
     
     if timed_out
         activated_digraph = digraph();
+        exchange_value = 0;
         return;
     end
     
-    activated_bipartite_graph = graph(bipartite_graph.Edges(activated_edge_indices,:), bipartite_graph.Nodes);
+    activated_bipartite_graph = graph(bipartite_graph.Edges(logical(round(setting_edges)),:), bipartite_graph.Nodes);
     activated_digraph = to_digraph(activated_bipartite_graph);
+    exchange_value = round(maximum);
 end
 
 function [equality_matrix, equality_vector] = get_trader_wanted_constraints(bipartite_graph)

@@ -8,14 +8,14 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = restri
         return;
     end
     
-    [activated_edge_indices, exchange_value, timed_out, core_exec_time] = activate_maximizing_value(digraph_.Edges.Weight, inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
+    [setting_edges, exchange_value, timed_out, core_exec_time] = BILP_solver(digraph_.Edges.Weight, inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
     
     if timed_out
         activated_digraph = digraph();
         return;
     end
     
-    activated_digraph = digraph(digraph_.Edges(activated_edge_indices,:), digraph_.Nodes);
+    activated_digraph = digraph(digraph_.Edges(logical(setting_edges),:), digraph_.Nodes);
 end
 
 function [inequality_matrix, inequality_vector, timed_out] = get_inequality_constraints(digraph, max_edges_cycle, max_edges_chain, timeout_find_cycles_chains)

@@ -10,14 +10,14 @@ function [activated_digraph, exchange_value, timed_out, core_exec_time] = restri
     
     [inequality_matrix, inequality_vector] = get_containment_count_constraints(cycles_chains, numnodes(digraph_));
     
-    [activated_cycle_indices, exchange_value, timed_out, core_exec_time] = activate_maximizing_value(cellfun(@length, cycles_chains)-1, inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
+    [setting_cycles_chains, exchange_value, timed_out, core_exec_time] = BILP_solver(cellfun(@length, cycles_chains)-1, inequality_matrix, inequality_vector, [], [], timeout_solver, optimoptions);
     
     if timed_out
         activated_digraph = digraph();
         return;
     end
     
-    activated_digraph = cycles_chains_to_digraph(cycles_chains(activated_cycle_indices), numnodes(digraph_));
+    activated_digraph = cycles_chains_to_digraph(cycles_chains(logical(setting_cycles_chains)), numnodes(digraph_));
 end
 
 function [inequality_matrix, inequality_vector] = get_containment_count_constraints(cycles_chains, nr_nodes)
