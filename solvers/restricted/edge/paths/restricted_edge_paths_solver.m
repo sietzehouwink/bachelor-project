@@ -35,12 +35,27 @@ end
 function [inequality_matrix, inequality_vector, timed_out] = get_disallowed_paths_constraints(digraph, disallowed_path_length, timeout)
     [paths, timed_out] = find_paths(digraph, (1:numnodes(digraph))', disallowed_path_length, disallowed_path_length, timeout);
     
-    inequality_matrix = zeros(length(paths), numedges(digraph));
+    nr_edges_paths = zeros(length(paths),1);
     for index_path = 1:length(paths)
-        path = paths{index_path};
-        edges_in_path = findedge(digraph, path(1:end-1), path(2:end));
-        inequality_matrix(index_path, edges_in_path) = 1;
+        path = paths{index_path};   
+        nr_edges_paths(index_path) = length(path)-1;
     end
+    sum_nr_edges_paths = sum(nr_edges_paths);
     
+    indices_start = zeros(sum_nr_edges_paths,1);
+    indices_end = zeros(sum_nr_edges_paths,1);
+    
+    index_indices = 1;
+    for index_path = 1:length(paths)
+        path = paths{index_path};   
+        indices_start(index_indices:index_indices+length(path)-2) = path(1:end-1);
+        indices_end(index_indices:index_indices+length(path)-2) = path(2:end);
+        index_indices = index_indices + length(path)-1;
+    end
+
+    indices_paths = repelem(1:length(paths), nr_edges_paths);
+    indices_edges = findedge(digraph, indices_start, indices_end);
+    
+    inequality_matrix = sparse(indices_paths, indices_edges, 1, length(paths), numedges(digraph));    
     inequality_vector = (disallowed_path_length-1) * ones(length(paths),1);
 end

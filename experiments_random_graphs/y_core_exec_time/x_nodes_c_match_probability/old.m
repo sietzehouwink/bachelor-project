@@ -20,11 +20,10 @@ solver = @(digraph_) unrestricted_edge_bipartite_solver(digraph_, timeout, cplex
 % RESTRICTED CYCLE CHAIN DIGRAPH - CYCLE 3
 % solver = @(digraph_) restricted_cycle_chain_solver(digraph_, 3, Inf, timeout, timeout, cplexoptimset);
 
-min_density = 2^-2;
-max_density = 1;
-nr_samples_density = 3;
-samples_density = sqrt(linspace(min_density, max_density, nr_samples_density));
-%samples_density = round(logspace(log10(min_density), log10(max_density), nr_samples_density), 3);
+min_fraction_match = 0;
+max_fraction_match = 1;
+nr_samples_fraction_match = 3;
+samples_fraction_match = linspace(min_fraction_match, max_fraction_match, nr_samples_fraction_match);
 nr_samples_nr_nodes = 8;
 nr_measurements = 1%8;
 
@@ -33,7 +32,8 @@ figure;
 hold on;
 xlabel('Number of nodes');
 ylabel('Core execution time (s)');
-for density = samples_density  
+for fraction_match = samples_fraction_match
+    nr_edges = fraction_match^2 * nr_nodes * (nr_nodes-1);
     evaluator = @(samples_nr_nodes, samples_nr_edges) evaluate_core_exec_times_generated(samples_nr_nodes, samples_nr_edges, nr_measurements, solver);
     max_nr_nodes = get_match_target_time(density, evaluator, mean_target_time, std_target_time);
     

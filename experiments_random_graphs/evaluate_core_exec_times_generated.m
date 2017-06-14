@@ -1,7 +1,7 @@
 function [mean_exchange_values, std_exchange_values, timed_outs_any, mean_core_exec_times, std_core_exec_times] = evaluate_core_exec_times_generated(samples_nr_nodes, samples_nr_edges, nr_measurements, solver)
-    measurements_exchange_values = zeros(length(samples_nr_nodes), nr_measurements);
+    measurements_exchange_values = NaN(length(samples_nr_nodes), nr_measurements);
     timed_outs_any = false(length(samples_nr_nodes), 1);
-    measurements_core_exec_times = zeros(length(samples_nr_nodes), nr_measurements);
+    measurements_core_exec_times = NaN(length(samples_nr_nodes), nr_measurements);
     waitbar_ = waitbar(0, 'measure core exec times');
     
     for index_measurement = 1:nr_measurements

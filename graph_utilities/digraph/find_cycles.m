@@ -59,13 +59,30 @@ function [branched] = branch(paths, adjacency_matrix)
     for index_path = 1:size(paths,1)
         path = paths(index_path,:);
         successors_path = find(adjacency_matrix(path(end),:));
-        branch_nodes = successors_path(~ismember(successors_path, path));
+        sort(path);
+        branch_nodes = successors_path(~ismember_sorted(successors_path, sort(path)));
         if isempty(branch_nodes)
             continue;
         end
         branched{end+1} = [repmat(path, length(branch_nodes), 1) branch_nodes'];
     end
     branched = vertcat(branched{:});
+end
+
+function [result] = ismember_sorted(a,b)
+    result = false(length(a),1);
+    i = 1;
+    j = 1;
+    while i <= length(a) && j <= length(b)
+        if a(i) == b(j)
+            result(i) = true;
+            i = i + 1;
+        elseif a(i) > b(j)
+            j = j + 1;
+        else
+            i = i + 1;
+        end
+    end
 end
 
 function [cycles] = close_paths(paths, adjacency_matrix)
