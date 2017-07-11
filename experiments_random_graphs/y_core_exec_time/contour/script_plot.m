@@ -6,6 +6,7 @@ hold on;
 xlabel('number of agents', 'FontSize', 14);
 ylabel('match probability', 'FontSize', 14);
 
+
 % title({'Unrestricted - Edge - Bipartite Graph', 'Contour Core Execution Time  = 1.0 s'}, 'FontSize', 14)
 % load('/Users/sietzehouwink/Documents/bachelor-project/experiments_random_graphs/y_core_exec_time/contour/measurements/unrestricted_edge_bipartite_solver_1s.mat')
 % plot([0, visited_nr_nodes], [1,visited_match_probability], 'k');
@@ -50,6 +51,18 @@ ylabel('match probability', 'FontSize', 14);
 % load('/Users/sietzehouwink/Documents/bachelor-project/experiments_random_graphs/y_core_exec_time/contour/measurements/restricted_edge_cycles_chains_solver_2_1s.mat')
 % plot([0, visited_nr_nodes], [1,visited_match_probability], 'k');
 
+% POWERPOINT
+set(gca, 'Color', 'None')
+set(gcf, 'Position', [100, 100, 1024, 512])
+ax = gca;
+ax.LineWidth = 3;
+ax.XColor = [28 173 228] / 255;
+ax.YColor = [28 173 228] / 255;
+ax.FontSize = 32;
+% load('/Users/sietzehouwink/Documents/bachelor-project/experiments_random_graphs/y_core_exec_time/contour/measurements/unrestricted_edge_bipartite_solver_1s.mat')
+% plot([0, visited_nr_nodes], [1,visited_match_probability], 'k', 'Color', [28 173 228] / 255, 'LineWidth', 3);
+% load('/Users/sietzehouwink/Documents/bachelor-project/experiments_random_graphs/y_core_exec_time/contour/measurements/restricted_cycles_chains_solver_2_1s.mat')
+% plot([0, visited_nr_nodes], [1,visited_match_probability], 'k', 'Color', [28 173 228] / 255, 'LineWidth', 3);
 
 xlim([0 Inf]);
 ylim([0 1.1]);
