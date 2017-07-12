@@ -1,4 +1,5 @@
 load('digraphs');
-i = 11;
-plot(digraphs{i}, 'NodeLabel', digraphs{i}.Nodes.AgentType)
+i = 10;
+
+plot(digraphs{i}, 'NodeLabel', digraphs{i}.Nodes.AgentType, 'EdgeColor', 'black', 'NodeColor', 'black')
 set(gca,'visible','off');
